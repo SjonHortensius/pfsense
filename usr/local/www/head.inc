@@ -332,59 +332,52 @@ if(! $g['disablehelpmenu']) {
 			</ul>
 		</div>
 	</div>
-
-	<div class="modal fade" id="notices" role="dialog" aria-labelledby="noticesTitle" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-
-					<h3 class="modal-title" id="myModalLabel">Notices</h3>
-				</div>
-
-				<div class="modal-body">
+</nav>
 <?php
-$noticeCategories = array();
-foreach($notices as $time => $notice)
-{
-	if (!isset($noticeCategories[ $notice['category'] ]))
-		$noticeCategories[ $notice['category'] ] = array();
 
+require_once('classes/Modal.class.php');
+
+$modal_notices = new Modal('Notices', 'notices', 'large');
+
+$modal_notices->addFooter(new Form_Button(
+	'close',
+	'Close',
+	''
+))->setAttribute('data-dismiss', 'modal');
+
+$modal_notices->addFooter(new Form_Button(
+	'mark_all_as_read',
+	'Mark all as read',
+	'/?closenotice=all'
+))->addClass('btn-primary')->removeClass('btn-default');
+
+$noticeCategories = $notice['category'];
+
+foreach($notices as $time => $notice) {
+	if (!isset($noticeCategories[$notice['category']])) {
+		$noticeCategories[ $notice['category'] ] = array();
+	}
 	$notice['time'] = $time;
-	array_push($noticeCategories[ $notice['category'] ], $notice);
+	array_push($noticeCategories[$notice['category']], $notice);
 }
 
-foreach($noticeCategories as $category => $catNotices):?>
-	<h4><?=$category?></h4>
-	<ul>
-<?php
-	foreach($catNotices as $notice):
+foreach($noticeCategories as $category => $catNotices) {
+	$html .= "<h4>{$category}</h4>";
+	$html .= '<ul>';
+	foreach($catNotices as $notice) {
+		$html .= '<li>';
+		if (!empty($notice['url'])) {
+			$html .= "<a href=\"{$notice['url']}\">{$notice['id']}</a> - ";
+		}
+		$html .= "{$notice['notice']}<i> @ " . date('Y-m-d H:i:s', $notice['time']) . '</i>';
+		$html .= '</li>';
+	}
+	$html .= '</ul>';
+}
+
+$modal_notices->addHtml($html);
+print $modal_notices;
 ?>
-	<li>
-		<b>
-<?php if (!empty($notice['url'])):?>
-		<a href="<?=$notice['url']?>"><?=$notice['id']?></a> -
-<?php endif;?>
-		</b>
-		<?=$notice['notice']?>
-		<i>@ <?=date('Y-m-d H:i:s', $notice['time'])?></i>
-	</li>
-<?php 	endforeach;?>
-</ul>
-<?php endforeach;?>
-				</div>
-
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<a type="button" class="btn btn-primary" href="/?closenotice=all">Mark all as read</a>
-				</div>
-			</div>
-		</div>
-	</div>
-
-</nav>
 <div class="container">
 	<header class="header">
 		<?=genhtmltitle($pgtitle)?>
