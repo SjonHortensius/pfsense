@@ -9,7 +9,6 @@ class Modal extends Form
 	protected $_id = '';
 	protected $_title = '';
 	protected $_groups = array();
-	protected $_footer = array();
 	protected $_html = '';
 	protected $_modal_class_size = '';
 
@@ -83,7 +82,11 @@ class Modal extends Form
 		}
 
 		$title = gettext($title);
-		$html = (empty($this->_html)) ? implode('', $this->_groups) : $this->_html;
+
+		$html = implode('', $this->_groups);
+		$html .= $this->_html;
+
+		$footer = implode('', $this->_global);
 		$footer = implode('', $this->_footer);
 
 		return <<<EOT
