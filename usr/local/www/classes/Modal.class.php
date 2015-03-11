@@ -1,11 +1,10 @@
 <?php
 
-require_once('classes/Form/Element.class.php');
-require_once('classes/Form/Input.class.php');
+require_once('classes/Form.class.php');
 foreach (glob('classes/Form/*.class.php') as $file)
 	require_once($file);
 
-class Modal extends Form_Element
+class Modal extends Form
 {
 	protected $_id = '';
 	protected $_title = '';
@@ -13,9 +12,6 @@ class Modal extends Form_Element
 	protected $_footer = array();
 	protected $_html = '';
 	protected $_modal_class_size = '';
-	protected $_labelWidth = 2;
-	// Empty is interpreted by all browsers to submit to the current URI
-	protected $_action;
 
 	public function __construct($title, $id, $size = '')
 	{
@@ -64,37 +60,11 @@ class Modal extends Form_Element
 		return $this;
 	}
 
-	public function setLabelWidth($size)
-	{
-		if ($size < 1 || $size > 12) {
-			throw new Exception('Incorrect size, pass a number between 1 and 12');
-		}
-
-		$this->_labelWidth = (int)$size;
-	}
-
-	public function setAction($uri)
-	{
-		$this->_action = $uri;
-
-		return $this;
-	}
-
-	public function getLabelWidth()
-	{
-		return $this->_labelWidth;
-	}
-
 	public function addFooter(Form_Input $input)
 	{
 		array_push($this->_footer, $input);
 
 		return $input;
-	}
-
-	protected function _setParent()
-	{
-		throw new Exception('Form does not have a parent');
 	}
 
 	public function __toString()
