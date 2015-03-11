@@ -12,12 +12,25 @@ class Modal extends Form_Element
 	protected $_groups = array();
 	protected $_footer = array();
 	protected $_html = '';
+	protected $_modal_class_size = '';
 	protected $_labelWidth = 2;
 	// Empty is interpreted by all browsers to submit to the current URI
 	protected $_action;
 
-	public function __construct($title, $id)
+	public function __construct($title, $id, $size = '')
 	{
+		switch ($size) {
+			case 'small':
+				$this->_modal_class_size = 'modal-sm';
+				break;
+			case 'large':
+				$this->_modal_class_size = 'modal-lg';
+				break;
+			case '':
+				break;
+			default:
+				throw new Exception('Incorrect size, pass either large or small');
+		}
 		$this->_id = $id;
 		$this->_title = $title;
 
@@ -53,8 +66,9 @@ class Modal extends Form_Element
 
 	public function setLabelWidth($size)
 	{
-		if ($size < 1 || $size > 12)
+		if ($size < 1 || $size > 12) {
 			throw new Exception('Incorrect size, pass a number between 1 and 12');
+		}
 
 		$this->_labelWidth = (int)$size;
 	}
@@ -104,7 +118,7 @@ class Modal extends Form_Element
 
 		return <<<EOT
 	<div {$this->getHtmlClass()} id="{$this->_id}" role="dialog" aria-labelledby="{$this->_id}" aria-hidden="true">
-		<div class="modal-dialog">
+		<div class="modal-dialog {$this->_modal_class_size}">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
