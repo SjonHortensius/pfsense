@@ -3,7 +3,6 @@
 class Form_Input extends Form_Element
 {
 	protected $_title;
-	protected $_attributes;
 	protected $_help;
 	protected $_helpParams = array();
 	protected $_columnWidth;
@@ -11,18 +10,22 @@ class Form_Input extends Form_Element
 
 	public function __construct($name, $title, $type = 'text', $value = null, array $attributes = array())
 	{
-		$attributes['name'] = $name;
-		$this->_title = $title;
+		$this->setAttribute('name', $name);
+		$this->setAttribute('id', $name);
+		$this->_title = htmlspecialchars($title);
 		$this->addClass('form-control');
 
-		if (isset($type))
-			$attributes['type'] = $type;
+		if (isset($type)) {
+			$this->setAttribute('type', $type);
+		}
 
-		if (isset($value))
-			$attributes['value'] = $value;
+		if (isset($value)) {
+			$this->setAttribute('value', $value);
+		}
 
-		$attributes['id'] = $attributes['name'];
-		$this->_attributes = $attributes;
+		foreach($attributes as $name => $value) {
+			$this->setAttribute($name, $value);
+		}
 
 		return $this;
 	}
@@ -30,11 +33,6 @@ class Form_Input extends Form_Element
 	public function getTitle()
 	{
 		return $this->_title;
-	}
-
-	public function getName()
-	{
-		return $this->_attributes['name'];
 	}
 
 	public function setHelp($help, array $params = array())
@@ -52,21 +50,15 @@ class Form_Input extends Form_Element
 
 	public function setWidth($size)
 	{
-		if ($size < 1 || $size > 12)
+		if ($size < 1 || $size > 12) {
 			throw new Exception('Incorrect size, pass a number between 1 and 12');
+		}
 
 		$this->removeColumnClass('col-sm-'. $this->_columnWidth);
 
 		$this->_columnWidth = (int)$size;
 
 		$this->addColumnClass('col-sm-'. $this->_columnWidth);
-
-		return $this;
-	}
-
-	public function setAttribute($key, $value = null)
-	{
-		$this->_attributes[ $key ] = $value;
 
 		return $this;
 	}
@@ -95,22 +87,14 @@ class Form_Input extends Form_Element
 
 	protected function _getInput()
 	{
-		$html = '<input';
-
-		foreach ($this->_attributes as $key => $value)
-			$html .= ' '.$key. (isset($value) ? '="'. htmlspecialchars($value).'"' : '');
-
-		return $html .'/>';
+		return "<input{$this->getHtmlAttribute()}/>";
 	}
 
 	public function __toString()
 	{
-		$this->_attributes['class'] = $this->getHtmlClass(false);
-
 		$input = $this->_getInput();
 
-		if (isset($this->_help))
-		{
+		if (isset($this->_help)) {
 			$help = gettext($this->_help);
 
 			if (!empty($this->_helpParams))
@@ -129,7 +113,6 @@ class Form_Input extends Form_Element
 		return <<<EOT
 	<div {$this->getColumnHtmlClass()}>
 		{$input}
-
 		{$help}
 	</div>
 EOT;
