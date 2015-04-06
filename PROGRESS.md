@@ -1,5 +1,7 @@
 ## Bootstrap Conversion Progress
 
+Last updated April 6 2015
+
 Use this table to list the php pages that have been converted to bootstrap, those that have yet to be converted, and those that are currently being worked on. 
 
 The script used to generate the table can be found at the bottom of this page
@@ -12,14 +14,14 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |Page/file                                    |Status                   |User                    |Comments                                                    |
 |---------------------------------------------|:-------------------------:|------------------------|------------------------------------------------------------|
 |bandwidth_by_ip.php                          |                         |                        |                                                            |
-|carp_status.php                              | &#x2705;                |                        |                                                            |
-|crash_reporter.php                           | &#x2705;                |                        |                                                            |
-|diag_arp.php                                 | &#x2705;                |                        |                                                            |
-|diag_authentication.php                      | &#x2705;                |                        |                                                            |
-|diag_backup.php                              | &#x2705;                |                        |                                                            |
-|diag_confbak.php                             | &#x2705;                |                        |                                                            |
-|diag_defaults.php                            | &#x2705;                |                        |                                                            |
-|diag_dns.php                                 | &#x1f504;               | sbeaver                |                                                            |
+|carp_status.php                              |                         |                        |                                                            |
+|crash_reporter.php                           |                         |                        |                                                            |
+|diag_arp.php                                 |                         |                        |                                                            |
+|diag_authentication.php                      |                         |                        |                                                            |
+|diag_backup.php                              |                         |                        |                                                            |
+|diag_confbak.php                             |                         |                        |                                                            |
+|diag_defaults.php                            |                         |                        |                                                            |
+|diag_dns.php                                 | &#x2705;                |                        |                                                            |
 |diag_dump_states.php                         |                         |                        |                                                            |
 |diag_dump_states_sources.php                 |                         |                        |                                                            |
 |diag_gmirror.php                             |                         |                        |                                                            |
@@ -62,11 +64,11 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |diag_system_pftop.php                        |                         |                        |                                                            |
 |diag_tables.php                              |                         |                        |                                                            |
 |diag_testport.php                            |                         |                        |                                                            |
-|diag_traceroute.php                          |                         |                        |                                                            |
+|diag_traceroute.php                          | &#x1f504;               | sbeaver                |                                                            |
 |easyrule.php                                 |                         |                        |                                                            |
 |edit.php                                     |                         |                        |                                                            |
 |exec.php                                     |                         |                        |                                                            |
-|firewall_aliases.php                         | &#x2705;                |                        |                                                            |
+|firewall_aliases.php                         |                         |                        |                                                            |
 |firewall_aliases_edit.php                    | &#x2705;                |                        |                                                            |
 |firewall_aliases_import.php                  | &#x2705;                |                        |                                                            |
 |firewall_nat.php                             |                         |                        |                                                            |
@@ -77,7 +79,7 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |firewall_nat_npt_edit.php                    |                         |                        |                                                            |
 |firewall_nat_out.php                         |                         |                        |                                                            |
 |firewall_nat_out_edit.php                    |                         |                        |                                                            |
-|firewall_rules.php                           | &#x2705;                |                        |                                                            |
+|firewall_rules.php                           |                         |                        |                                                            |
 |firewall_rules_edit.php                      | &#x2705;                |                        |                                                            |
 |firewall_schedule.php                        |                         |                        |                                                            |
 |firewall_schedule_edit.php                   |                         |                        |                                                            |
@@ -95,9 +97,9 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |halt.php                                     |                         |                        |                                                            |
 |help.php                                     |                         |                        |                                                            |
 |ifstats.php                                  |                         |                        |                                                            |
-|index.php                                    | &#x2705;                |                        |                                                            |
+|index.php                                    |                         |                        |                                                            |
 |interfaces.php                               |                         |                        |                                                            |
-|interfaces_assign.php                        | &#x2705;                |                        |                                                            |
+|interfaces_assign.php                        |                         |                        |                                                            |
 |interfaces_bridge.php                        |                         |                        |                                                            |
 |interfaces_bridge_edit.php                   |                         |                        |                                                            |
 |interfaces_gif.php                           |                         |                        |                                                            |
@@ -105,14 +107,14 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |interfaces_gre.php                           |                         |                        |                                                            |
 |interfaces_gre_edit.php                      |                         |                        |                                                            |
 |interfaces_groups.php                        |                         |                        |                                                            |
-|interfaces_groups_edit.php                   |                         |                        |                                                            |
+|interfaces_groups_edit.php                   | &#x2705;                |                        |                                                            |
 |interfaces_lagg.php                          |                         |                        |                                                            |
 |interfaces_lagg_edit.php                     |                         |                        |                                                            |
 |interfaces_ppps.php                          |                         |                        |                                                            |
 |interfaces_ppps_edit.php                     |                         |                        |                                                            |
 |interfaces_qinq.php                          |                         |                        |                                                            |
 |interfaces_qinq_edit.php                     |                         |                        |                                                            |
-|interfaces_vlan.php                          | &#x2705;                |                        |                                                            |
+|interfaces_vlan.php                          |                         |                        |                                                            |
 |interfaces_vlan_edit.php                     | &#x2705;                |                        |                                                            |
 |interfaces_wireless.php                      |                         |                        |                                                            |
 |interfaces_wireless_edit.php                 |                         |                        |                                                            |
@@ -130,9 +132,9 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |load_balancer_virtual_server_edit.php        |                         |                        |                                                            |
 |pkg.php                                      |                         |                        |                                                            |
 |pkg_edit.php                                 |                         |                        |                                                            |
-|pkg_mgr.php                                  | &#x2705;                |                        |                                                            |
-|pkg_mgr_install.php                          | &#x2705;                |                        |                                                            |
-|pkg_mgr_installed.php                        | &#x2705;                |                        |                                                            |
+|pkg_mgr.php                                  |                         |                        |                                                            |
+|pkg_mgr_install.php                          |                         |                        |                                                            |
+|pkg_mgr_installed.php                        |                         |                        |                                                            |
 |pkg_mgr_settings.php                         |                         |                        |                                                            |
 |reboot.php                                   |                         |                        |                                                            |
 |restart_httpd.php                            |                         |                        |                                                            |
@@ -207,8 +209,8 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |system_advanced_misc.php                     | &#x2705;                |                        |                                                            |
 |system_advanced_network.php                  | &#x2705;                |                        |                                                            |
 |system_advanced_notifications.php            | &#x2705;                |                        |                                                            |
-|system_advanced_sysctl.php                   |                         |                        |                                                            |
-|system_authservers.php                       |                         |                        |                                                            |
+|system_advanced_sysctl.php                   | &#x2705;                |                        |                                                            |
+|system_authservers.php                       | &#x2705;                |                        |                                                            |
 |system_camanager.php                         |                         |                        |                                                            |
 |system_certmanager.php                       |                         |                        |                                                            |
 |system_crlmanager.php                        |                         |                        |                                                            |
@@ -220,29 +222,29 @@ Use the &#x1f504; emoji (`&#x1f504;`) to show that the bootstrap conversion is i
 |system_gateway_groups.php                    |                         |                        |                                                            |
 |system_gateway_groups_edit.php               |                         |                        |                                                            |
 |system_gateways.php                          |                         |                        |                                                            |
-|system_gateways_edit.php                     |                         |                        |                                                            |
-|system_groupmanager.php                      |                         |                        |                                                            |
-|system_groupmanager_addprivs.php             |                         |                        |                                                            |
+|system_gateways_edit.php                     | &#x2705;                |                        |                                                            |
+|system_groupmanager.php                      | &#x2705;                |                        |                                                            |
+|system_groupmanager_addprivs.php             | &#x2705;                |                        |                                                            |
 |system_hasync.php                            |                         |                        |                                                            |
 |system_routes.php                            |                         |                        |                                                            |
 |system_routes_edit.php                       |                         |                        |                                                            |
-|system_usermanager.php                       |                         |                        |                                                            |
+|system_usermanager.php                       | &#x2705;                |                        |                                                            |
 |system_usermanager_addprivs.php              |                         |                        |                                                            |
 |system_usermanager_passwordmg.php            |                         |                        |                                                            |
-|system_usermanager_settings.php              |                         |                        |                                                            |
+|system_usermanager_settings.php              | &#x2705;                |                        |                                                            |
 |system_usermanager_settings_ldapacpicker.php |                         |                        |                                                            |
 |system_usermanager_settings_test.php         |                         |                        |                                                            |
 |uploadconfig.php                             |                         |                        |                                                            |
-|vpn_ipsec.php                                |                         |                        |                                                            |
+|vpn_ipsec.php                                | &#x2705;                |                        |                                                            |
 |vpn_ipsec_keys.php                           |                         |                        |                                                            |
-|vpn_ipsec_keys_edit.php                      |                         |                        |                                                            |
+|vpn_ipsec_keys_edit.php                      | &#x2705;                |                        |                                                            |
 |vpn_ipsec_mobile.php                         | &#x2705;                |                        |                                                            |
 |vpn_ipsec_phase1.php                         |                         |                        |                                                            |
 |vpn_ipsec_phase2.php                         |                         |                        |                                                            |
-|vpn_ipsec_settings.php                       |                         |                        |                                                            |
-|vpn_l2tp.php                                 | &#x2705;                |                        |                                                            |
-|vpn_l2tp_users.php                           | &#x2705;                |                        |                                                            |
-|vpn_l2tp_users_edit.php                      | &#x2705;                |                        |                                                            |
+|vpn_ipsec_settings.php                       | &#x2705;                |                        |                                                            |
+|vpn_l2tp.php                                 |                         |                        |                                                            |
+|vpn_l2tp_users.php                           |                         |                        |                                                            |
+|vpn_l2tp_users_edit.php                      |                         |                        |                                                            |
 |vpn_openvpn_client.php                       |                         |                        |                                                            |
 |vpn_openvpn_csc.php                          |                         |                        |                                                            |
 |vpn_openvpn_server.php                       |                         |                        |                                                            |
