@@ -30,7 +30,7 @@
 
 /*
 	pfSense_BUILDER_BINARIES:	/sbin/pfctl
-	pfSense_MODULE:	filter
+	pfSense_MODULE: filter
 */
 
 ##|+PRIV
@@ -129,38 +129,38 @@ include("head.inc");
 <!-- Start of tab content -->
 
 <?php
-    $current_statecount=`pfctl -si | grep "current entries" | awk '{ print $3 }'`;
+	$current_statecount=`pfctl -si | grep "current entries" | awk '{ print $3 }'`;
 ?>
 
-    <form action="<?=$_SERVER['SCRIPT_NAME']?>" method="post" name="iform">
+	<form action="<?=$_SERVER['SCRIPT_NAME']?>" method="post" name="iform">
 	<?=gettext("&nbsp;Current total state count")?>: <?= $current_statecount ?>
-    <div class="pull-right">
+	<div class="pull-right">
 		<?=gettext("Filter expression:")?>
 		<input type="text" name="filter" class="formfld search" value="<?=htmlspecialchars($_POST['filter'])?>" size="30" />
 		<input type="submit" class="btn btn-primary btn-sm formbtn" value="<?=gettext("Filter")?>" />
 
-<?php 
-	    if (isset($_POST['filter']) && (is_ipaddr($_POST['filter']) || is_subnet($_POST['filter'])))
-	       print('<input type="submit" class="btn btn-danger btn-sm formbtn" name="killfilter" value="Kill">'); 
-?>		 
+<?php
+		if (isset($_POST['filter']) && (is_ipaddr($_POST['filter']) || is_subnet($_POST['filter'])))
+		   print('<input type="submit" class="btn btn-danger btn-sm formbtn" name="killfilter" value="Kill">');
+?>
 
-    &nbsp;
-    </div>
-    
+	&nbsp;
+	</div>
+
 	</form>
-    <br>
-    <div class="responsive">	
+	<br>
+	<div class="responsive">
 	<table class="table table-striped table-hover table-compact" summary="results">
 		<thead>
-		    <tr>
-			    <th width="5%"><?=gettext("Int")?></th>
-			    <th width="5%"><?=gettext("Proto")?></th>
-			    <th width="65"><?=gettext("Source -> Router -> Destination")?></th>
-			    <th width="24%"><?=gettext("State")?></th>
-			    <th width="1%"></th>
-		    </tr>
+			<tr>
+				<th width="5%"><?=gettext("Int")?></th>
+				<th width="5%"><?=gettext("Proto")?></th>
+				<th width="65"><?=gettext("Source -> Router -> Destination")?></th>
+				<th width="24%"><?=gettext("State")?></th>
+				<th width="1%"></th>
+			</tr>
 		</thead>
-		<tbody>	
+		<tbody>
 <?php
 
 $row = 0;
@@ -173,7 +173,7 @@ while ($line = chop(fgets($fd))) {
 
 	$line_split = preg_split("/\s+/", $line);
 
-	$iface  = array_shift($line_split);
+	$iface	= array_shift($line_split);
 	$proto = array_shift($line_split);
 	$state = array_pop($line_split);
 	$info  = implode(" ", $line_split);
@@ -189,7 +189,7 @@ while ($line = chop(fgets($fd))) {
 	$dstip = trim($parts[0]);
 
 ?>
-	<tr id="r:<?= $srcip ?>:<?= $dstip ?>"> 
+	<tr id="r:<?= $srcip ?>:<?= $dstip ?>">
 		<td><?= $iface ?></td>
 		<td><?= $proto ?></td>
 		<td><?= $info ?></td>

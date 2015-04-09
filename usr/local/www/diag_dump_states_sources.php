@@ -29,8 +29,8 @@
 */
 
 /*
-	pfSense_BUILDER_BINARIES:	/sbin/pfctl	
-	pfSense_MODULE:	filter
+	pfSense_BUILDER_BINARIES:	/sbin/pfctl
+	pfSense_MODULE: filter
 */
 
 ##|+PRIV
@@ -114,26 +114,26 @@ include("head.inc");
 ?>
 
 <!-- Start of tab content -->
-    <br />
-    <form action="<?=$_SERVER['SCRIPT_NAME']?>" method="get">
-        <div class="pull-right">
-		    <?=gettext("Filter expression:")?>
-		    <input type="text" name="filter" class="formfld search" value="<?=htmlspecialchars($_GET['filter'])?>" size="30" />
-		    <input type="submit" class="btn btn-primary btn-sm formbtn" value="<?=gettext("Filter")?>" />       
-            &nbsp;
-        </div>
+	<br />
+	<form action="<?=$_SERVER['SCRIPT_NAME']?>" method="get">
+		<div class="pull-right">
+			<?=gettext("Filter expression:")?>
+			<input type="text" name="filter" class="formfld search" value="<?=htmlspecialchars($_GET['filter'])?>" size="30" />
+			<input type="submit" class="btn btn-primary btn-sm formbtn" value="<?=gettext("Filter")?>" />
+			&nbsp;
+		</div>
 	</form>
-    <br>
-    <div class="responsive">
+	<br>
+	<div class="responsive">
 	<table class="table table-striped table-hover table-compact">
-	    <thead>
-    	    <tr>
-    			<th class="listhdrr" width="40%"><?=gettext("Source -> Destination")?></th>
-    			<th class="listhdrr" width="15%"><?=gettext("# States")?></th>
-    			<th class="listhdrr" width="15%"><?=gettext("# Connections")?></th>
-    			<th class="listhdr" width="15%"><?=gettext("Rate")?></th>
-    			<th class="list sort_ignore" width="1%"></th>
-    		</tr>
+		<thead>
+			<tr>
+				<th class="listhdrr" width="40%"><?=gettext("Source -> Destination")?></th>
+				<th class="listhdrr" width="15%"><?=gettext("# States")?></th>
+				<th class="listhdrr" width="15%"><?=gettext("# Connections")?></th>
+				<th class="listhdr" width="15%"><?=gettext("Rate")?></th>
+				<th class="list sort_ignore" width="1%"></th>
+			</tr>
 		</thead>
 		<tbody>
 
@@ -155,7 +155,7 @@ if(count($sources) > 0) {
 		list($all, $srcip, $dstip) = $source_split;
 
 ?>
-		    <tr name='r:<?="{$srcip}:{$dstip}" ?>'>
+			<tr name='r:<?="{$srcip}:{$dstip}" ?>'>
 				<td class='listlr'><?=$info?></td>
 				<td class='listr'><?=$numstates?></td>
 				<td class='listr'><?=$numconnections?></td>
@@ -184,8 +184,8 @@ else {
 
 <!-- End of tab content -->
 
-        </tbody>
-    </table>
+		</tbody>
+	</table>
 </div>
 </div>
 <?php include("foot.inc"); ?>
