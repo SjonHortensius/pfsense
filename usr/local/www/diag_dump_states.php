@@ -74,9 +74,6 @@ include("head.inc");
 
 ?>
 
-<body link="#0000CC" vlink="#0000CC" alink="#0000CC" onload="<?=$jsevents["body"]["onload"];?>">
-<?php include("fbegin.inc"); ?>
-
 <script type="text/javascript">
 //<![CDATA[
 	function removeState(srcip, dstip) {
@@ -89,7 +86,7 @@ include("head.inc");
 		jQuery('img[name="i:' + srcip + ":" + dstip + '"]').each(busy);
 
 		jQuery.ajax(
-			"<?=$_SERVER['SCRIPT_NAME'];?>",
+			"<?=$_SERVER['SCRIPT_NAME']?>",
 			{
 				type: "post",
 				data: {
@@ -105,7 +102,7 @@ include("head.inc");
 	function removeComplete(req) {
 		var values = req.responseText.split("|");
 		if(values[3] != "0") {
-			alert('<?=gettext("An error occurred.");?>');
+			alert('<?=gettext("An error occurred.")?>');
 			return;
 		}
 
@@ -116,65 +113,56 @@ include("head.inc");
 //]]>
 </script>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0" summary="tabcon">
-	<tr>
-		<td>
-		<?php
-			$tab_array = array();
-			$tab_array[] = array(gettext("States"), true, "diag_dump_states.php");
-			if (isset($config['system']['lb_use_sticky']))
-				$tab_array[] = array(gettext("Source Tracking"), false, "diag_dump_states_sources.php");
-			$tab_array[] = array(gettext("Reset States"), false, "diag_resetstate.php");
-			display_top_tabs($tab_array);
-		?>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<div id="mainarea">
+<div class="panel panel-default">
+
+<?php
+	$tab_array = array();
+	$tab_array[] = array(gettext("States"), true, "diag_dump_states.php");
+	if (isset($config['system']['lb_use_sticky']))
+		$tab_array[] = array(gettext("Source Tracking"), false, "diag_dump_states_sources.php");
+	$tab_array[] = array(gettext("Reset States"), false, "diag_resetstate.php");
+	display_top_tabs($tab_array);
+?>
+
+<br>
 
 <!-- Start of tab content -->
 
 <?php
-	$current_statecount=`pfctl -si | grep "current entries" | awk '{ print $3 }'`;
+    $current_statecount=`pfctl -si | grep "current entries" | awk '{ print $3 }'`;
 ?>
 
-<table class="tabcont" width="100%" border="0" cellspacing="0" cellpadding="0" summary="states">
-	<tr>
-		<td>
-			<form action="<?=$_SERVER['SCRIPT_NAME'];?>" method="post" name="iform">
-			<table class="tabcont" width="100%" border="0" cellspacing="0" cellpadding="0" summary="filter">
-				<tr>
-					<td>
-						<?=gettext("Current total state count");?>: <?= $current_statecount ?>
-					</td>
-					<td style="font-weight:bold;" align="right">
-						<?=gettext("Filter expression:");?>
-						<input type="text" name="filter" class="formfld search" value="<?=htmlspecialchars($_POST['filter']);?>" size="30" />
-						<input type="submit" class="formbtn" value="<?=gettext("Filter");?>" />
-					<?php if (isset($_POST['filter']) && (is_ipaddr($_POST['filter']) || is_subnet($_POST['filter']))): ?>
-						<input type="submit" class="formbtn" name="killfilter" value="<?=gettext("Kill");?>" />
-					<?php endif; ?>
-					</td>
-				</tr>
-			</table>
-			</form>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<table class="tabcont sortable" width="100%" border="0" cellspacing="0" cellpadding="0" summary="results">
-				<thead>
-				<tr>
-					<th class="listhdrr" width="5%"><?=gettext("Int");?></th>
-					<th class="listhdrr" width="5%"><?=gettext("Proto");?></th>
-					<th class="listhdrr" width="65"><?=gettext("Source -> Router -> Destination");?></th>
-					<th class="listhdr" width="24%"><?=gettext("State");?></th>
-					<th class="list sort_ignore" width="1%"></th>
-				</tr>
-				</thead>
-				<tbody>
+    <form action="<?=$_SERVER['SCRIPT_NAME']?>" method="post" name="iform">
+	<?=gettext("&nbsp;Current total state count")?>: <?= $current_statecount ?>
+    <div class="pull-right">
+		<?=gettext("Filter expression:")?>
+		<input type="text" name="filter" class="formfld search" value="<?=htmlspecialchars($_POST['filter'])?>" size="30" />
+		<input type="submit" class="btn btn-primary btn-sm formbtn" value="<?=gettext("Filter")?>" />
+
+<?php 
+	    if (isset($_POST['filter']) && (is_ipaddr($_POST['filter']) || is_subnet($_POST['filter'])))
+	       print('<input type="submit" class="btn btn-danger btn-sm formbtn" name="killfilter" value="Kill">'); 
+?>		 
+
+    &nbsp;
+    </div>
+    
+	</form>
+    <br>
+    <div class="responsive">	
+	<table class="table table-striped table-hover table-compact" summary="results">
+		<thead>
+		    <tr>
+			    <th width="5%"><?=gettext("Int")?></th>
+			    <th width="5%"><?=gettext("Proto")?></th>
+			    <th width="65"><?=gettext("Source -> Router -> Destination")?></th>
+			    <th width="24%"><?=gettext("State")?></th>
+			    <th width="1%"></th>
+		    </tr>
+		</thead>
+		<tbody>	
 <?php
+
 $row = 0;
 /* get our states */
 $grepline = (isset($_POST['filter'])) ? "| /usr/bin/egrep " . escapeshellarg(htmlspecialchars($_POST['filter'])) : "";
@@ -201,52 +189,46 @@ while ($line = chop(fgets($fd))) {
 	$dstip = trim($parts[0]);
 
 ?>
-	<tr valign="top" id="r:<?= $srcip ?>:<?= $dstip ?>">
-			<td class="listlr"><?= $iface ?></td>
-			<td class="listr"><?= $proto ?></td>
-			<td class="listr"><?= $info ?></td>
-			<td class="listr"><?= $state ?></td>
-			<td class="list">
-			<img src="/themes/<?= $g['theme'] ?>/images/icons/icon_x.gif" height="17" width="17" border="0"
-				onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" style="cursor:pointer;"
-				name="i:<?= $srcip ?>:<?= $dstip ?>"
-				title="<?= gettext('Remove all state entries from') ?> <?= $srcip ?> <?= gettext('to') ?> <?= $dstip ?>" alt="" />
-			</td>
+	<tr id="r:<?= $srcip ?>:<?= $dstip ?>"> 
+		<td><?= $iface ?></td>
+		<td><?= $proto ?></td>
+		<td><?= $info ?></td>
+		<td><?= $state ?></td>
+
+		<td>
+		<img src="/themes/<?= $g['theme'] ?>/images/icons/icon_x.gif" height="17" width="17" border="0"
+			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" style="cursor:pointer;"
+			name="i:<?= $srcip ?>:<?= $dstip ?>"
+			title="<?= gettext('Remove all state entries from') ?><?= $srcip ?><?= gettext('to') ?><?= $dstip ?>" alt="" />
+		</td>
 	</tr>
 <?php
 	$row++;
-	ob_flush();
 }
 
 if ($row == 0): ?>
 	<tr>
-		<td class="list" colspan="4" align="center" valign="top">
+		<td colspan="4" align="center">
 		<?= gettext("No states were found.") ?>
 		</td>
 	</tr>
+
 <?php endif;
+
 pclose($fd);
 ?>
-			</tbody>
-			</table>
-		</td>
-	</tr>
+
 	<tr>
-		<td class="list" colspan="4" align="center" valign="top">
+		<td colspan="4" align="center">
 		<?php if (isset($_POST['filter']) && !empty($_POST['filter'])): ?>
 			<?=gettext("States matching current filter")?>: <?= $row ?>
 		<?php endif; ?>
 		</td>
 	</tr>
+
+	</tbody>
 </table>
+</div>
+</div>
+<?php include("foot.inc"); ?>
 
-<!-- End of tab content -->
-
-		</div>
-	</td>
-  </tr>
-</table>
-
-<?php require("fend.inc"); ?>
-</body>
-</html>
