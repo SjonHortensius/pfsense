@@ -152,7 +152,7 @@ include("head.inc");
 	<div class="responsive">
 	<table class="table table-striped table-hover table-compact" summary="results">
 		<thead>
-			<tr>
+			<tr class="info">
 				<th width="5%"><?=gettext("Int")?></th>
 				<th width="5%"><?=gettext("Proto")?></th>
 				<th width="65"><?=gettext("Source -> Router -> Destination")?></th>
@@ -189,17 +189,28 @@ while ($line = chop(fgets($fd))) {
 	$dstip = trim($parts[0]);
 
 ?>
-	<tr id="r:<?= $srcip ?>:<?= $dstip ?>">
+        
+	<trid="r:<?= $srcip ?>:<?= $dstip ?>">
 		<td><?= $iface ?></td>
 		<td><?= $proto ?></td>
 		<td><?= $info ?></td>
 		<td><?= $state ?></td>
 
 		<td>
+		
+		<a class="btn btn-xs btn-default"
+			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" style="cursor:pointer;"
+			name="i:<?= $srcip ?>:<?= $dstip ?>"
+			title="<?= gettext('Remove all state entries from') ?><?= $srcip ?><?= gettext('to') ?><?= $dstip ?>" alt="">Remove</a>
+			
+			<!--
 		<img src="/themes/<?= $g['theme'] ?>/images/icons/icon_x.gif" height="17" width="17" border="0"
 			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" style="cursor:pointer;"
 			name="i:<?= $srcip ?>:<?= $dstip ?>"
 			title="<?= gettext('Remove all state entries from') ?><?= $srcip ?><?= gettext('to') ?><?= $dstip ?>" alt="" />
+			
+			-->
+						
 		</td>
 	</tr>
 <?php
