@@ -199,17 +199,8 @@ while ($line = chop(fgets($fd))) {
 		<td>
 		
 		<a class="btn btn-xs btn-default"
-			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" style="cursor:pointer;"
-			name="i:<?= $srcip ?>:<?= $dstip ?>"
-			title="<?= gettext('Remove all state entries from') ?><?= $srcip ?><?= gettext('to') ?><?= $dstip ?>" alt="">Remove</a>
-			
-			<!--
-		<img src="/themes/<?= $g['theme'] ?>/images/icons/icon_x.gif" height="17" width="17" border="0"
-			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" style="cursor:pointer;"
-			name="i:<?= $srcip ?>:<?= $dstip ?>"
-			title="<?= gettext('Remove all state entries from') ?><?= $srcip ?><?= gettext('to') ?><?= $dstip ?>" alt="" />
-			
-			-->
+			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" name="i:<?= $srcip ?>:<?= $dstip ?>"
+			title="<?= gettext('Remove all state entries from ') ?><?= $srcip ?><?= gettext(' to ') ?><?= $dstip ?>" alt="">Remove</a>
 						
 		</td>
 	</tr>
