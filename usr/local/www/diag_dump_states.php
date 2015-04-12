@@ -112,7 +112,7 @@ include("head.inc");
 	}
 //]]>
 </script>
-
+<div class="responsive">
 <div class="panel panel-default">
 
 <?php
@@ -149,7 +149,6 @@ include("head.inc");
 
 	</form>
 	<br>
-	<div class="responsive">
 	<table class="table table-striped table-hover table-compact" summary="results">
 		<thead>
 			<tr class="info">
@@ -190,7 +189,7 @@ while ($line = chop(fgets($fd))) {
 
 ?>
         
-	<trid="r:<?= $srcip ?>:<?= $dstip ?>">
+	<tr id="r:<?= $srcip ?>:<?= $dstip ?>">
 		<td><?= $iface ?></td>
 		<td><?= $proto ?></td>
 		<td><?= $info ?></td>
@@ -230,6 +229,7 @@ pclose($fd);
 
 	</tbody>
 </table>
+
 </div>
 </div>
 <?php include("foot.inc"); ?>
