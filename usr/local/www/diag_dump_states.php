@@ -112,7 +112,7 @@ include("head.inc");
 	}
 //]]>
 </script>
-<div class="responsive">
+
 <div class="panel panel-default">
 
 <?php
@@ -229,8 +229,6 @@ pclose($fd);
 
 	</tbody>
 </table>
-
-</div>
 </div>
 <?php include("foot.inc"); ?>
 

@@ -155,29 +155,28 @@ if(count($sources) > 0) {
 		list($all, $srcip, $dstip) = $source_split;
 
 ?>
-			<tr name='r:<?="{$srcip}:{$dstip}" ?>'>
-				<td class='listlr'><?=$info?></td>
-				<td class='listr'><?=$numstates?></td>
-				<td class='listr'><?=$numconnections?></td>
-				<td class='listr'><?=$rate?></td>
-				<td class='list'>
-				<img src='/themes/<?=$g['theme']; ?>/images/icons/icon_x.gif' height='17' width='17' border='0'
-					onclick="removeSource(<?="'{$srcip}', '{$dstip}'"; ?>);" style='cursor:pointer;'
-					name='i:<?="{$srcip}:{$dstip}"; ?>'
-					title='<?=gettext("Remove all source tracking entries from") . " {$srcip} " . gettext("to") . " {$dstip}"?>' alt='' />
-				</td>
-			</tr>
+        	<tr name='r:<?="{$srcip}:{$dstip}" ?>'>
+        		<td class='listlr'><?=$info?></td>
+        		<td class='listr'><?=$numstates?></td>
+        		<td class='listr'><?=$numconnections?></td>
+        		<td class='listr'><?=$rate?></td>
+        		<td class='list'>
+            		<a class="btn btn-xs btn-default"
+            			onclick="removeSource('<?= $srcip ?>', '<?= $dstip ?>');" name="i:<?= $srcip ?>:<?= $dstip ?>"
+            			title="<?= gettext('Remove all source tracking entries from ') ?><?= $srcip ?><?= gettext(' to ') ?><?= $dstip ?>" alt="">Remove</a>
+        		</td>
+        	</tr>
 <?php
 		$row++;
 	}
 }
 else {
 ?>
-	<tr>
-		<td class="list" colspan="4" align="center" valign="top">
-		<?= gettext("No source tracking entries were found.") ?>
-		</td>
-	</tr>
+	        <tr>
+        		<td class="list" colspan="4" align="center" valign="top">
+        		<?= gettext("No source tracking entries were found.") ?>
+        		</td>
+        	</tr>
 <?php
 }
 ?>
@@ -186,7 +185,6 @@ else {
 
 		</tbody>
 	</table>
-</div>
+    </div>
 </div>
 <?php include("foot.inc"); ?>
-
