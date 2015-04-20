@@ -169,10 +169,7 @@ include('head.inc');
 
 require('classes/Form.class.php');
 
-$form = new Form(new Form_Button(
-	'',
-	''
-));
+$form = new Form(false);
 
 $section = new Form_Section('Traceroute');
 
