@@ -65,28 +65,13 @@ include("head.inc");
 
 if ($input_errors)
 	print_input_errors($input_errors);
-
-require('classes/Form.class.php');
-$form = new Form(false);
-$form->addGlobal(new Form_Input(
-	'getactivity',
-	null,
-	'hidden',
-	'yes'
-));
-$section = new Form_Section('Auto update page');
-
-$section->addInput(new Form_Checkbox(
-	'refresh',
-	'Refresh',
-	'Automatically refresh the output below',
-	true
-));
-
-$form->add($section);
-print $form;
-
 ?>
+
+<form class="form-horizontal" method="post" action="">
+    <input class="form-control" name="getactivity" id="getactivity" type="hidden" value="yes"/>
+    <label><input name="refresh" id="refresh" type="checkbox" value="yes" checked="checked"/>&nbsp;Auto refresh</label>
+</form>	
+	
 <script>
 	function getpfinfo() {
 		if (!$('#refresh').is(':checked'))
@@ -116,4 +101,5 @@ print $form;
 	</div>
 </div>
 
-<?php include("foot.inc");
+<?php include("foot.inc"); ?>
+
