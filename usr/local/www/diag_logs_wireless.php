@@ -1,13 +1,13 @@
 <?php
 /* $Id$ */
 /*
-	diag_logs_wireless.php
-	part of pfSense
-
-	Copyright (C) 2008 Bill Marquette <bill.marquette@gmail.com>.
-	Copyright (C) 2008 Seth Mos <seth.mos@dds.nl>.
-	Copyright (C) 2011 Jim Pingle <jimp@pfsense.org>.
+	diag_logs.php
+	Copyright (C) 2004-2009 Scott Ullrich
 	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
+	All rights reserved.
+
+	originally part of m0n0wall (http://m0n0.ch/wall)
+	Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -32,15 +32,15 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-/*	
-	pfSense_MODULE:	routing
+/*		
+	pfSense_MODULE:	system
 */
 
 ##|+PRIV
-##|*IDENT=page-status-systemlogs-wireless
-##|*NAME=Status: System logs: Wireless page
-##|*DESCR=Allow access to the 'Status: System logs: System: Wireless' page.
-##|*MATCH=diag_logs_wireless.php*
+##|*IDENT=page-diagnostics-logs-system
+##|*NAME=Diagnostics: Logs: System page
+##|*DESCR=Allow access to the 'Diagnostics: Logs: System' page.
+##|*MATCH=diag_logs.php*
 ##|-PRIV
 
 require("guiconfig.inc");
@@ -58,56 +58,67 @@ $pgtitle = array(gettext("Status"),gettext("System logs"),gettext("Wireless"));
 $shortcut_section = "wireless";
 include("head.inc");
 
-?>
+$tab_array = array();
+$tab_array[] = array(gettext("System"), true, "diag_logs.php");
+$tab_array[] = array(gettext("Firewall"), false, "diag_logs_filter.php");
+$tab_array[] = array(gettext("DHCP"), false, "diag_logs_dhcp.php");
+$tab_array[] = array(gettext("Portal Auth"), false, "diag_logs_auth.php");
+$tab_array[] = array(gettext("IPsec"), false, "diag_logs_ipsec.php");
+$tab_array[] = array(gettext("PPP"), false, "diag_logs_ppp.php");
+$tab_array[] = array(gettext("VPN"), false, "diag_logs_vpn.php");
+$tab_array[] = array(gettext("Load Balancer"), false, "diag_logs_relayd.php");
+$tab_array[] = array(gettext("OpenVPN"), false, "diag_logs_openvpn.php");
+$tab_array[] = array(gettext("NTP"), false, "diag_logs_ntpd.php");
+$tab_array[] = array(gettext("Settings"), false, "diag_logs_settings.php");
+display_top_tabs($tab_array);
 
-<body link="#0000CC" vlink="#0000CC" alink="#0000CC">
-<?php include("fbegin.inc"); ?>
-<table width="100%" border="0" cellpadding="0" cellspacing="0" summary="logs system wireless">
-  <tr><td>
-<?php
-	$tab_array = array();
-	$tab_array[] = array(gettext("System"), true, "diag_logs.php");
-	$tab_array[] = array(gettext("Firewall"), false, "diag_logs_filter.php");
-	$tab_array[] = array(gettext("DHCP"), false, "diag_logs_dhcp.php");
-	$tab_array[] = array(gettext("Portal Auth"), false, "diag_logs_auth.php");
-	$tab_array[] = array(gettext("IPsec"), false, "diag_logs_ipsec.php");
-	$tab_array[] = array(gettext("PPP"), false, "diag_logs_ppp.php");
-	$tab_array[] = array(gettext("VPN"), false, "diag_logs_vpn.php");
-	$tab_array[] = array(gettext("Load Balancer"), false, "diag_logs_relayd.php");
-	$tab_array[] = array(gettext("OpenVPN"), false, "diag_logs_openvpn.php");
-	$tab_array[] = array(gettext("NTP"), false, "diag_logs_ntpd.php");
-	$tab_array[] = array(gettext("Settings"), false, "diag_logs_settings.php");
-	display_top_tabs($tab_array);
+$tab_array = array();
+$tab_array[] = array(gettext("General"), flase, "/diag_logs.php");
+$tab_array[] = array(gettext("Gateways"), false, "/diag_logs_gateways.php");
+$tab_array[] = array(gettext("Routing"), false, "/diag_logs_routing.php");
+$tab_array[] = array(gettext("Resolver"), false, "/diag_logs_resolver.php");
+$tab_array[] = array(gettext("Wireless"), true, "/diag_logs_wireless.php");
+display_top_tabs($tab_array, false, 'nav nav-tabs');
+
+require('classes/Form.class.php');
+
+$form = new Form(false);
+
+$section = new Form_Section('Log file filter');
+
+$section->addInput(new Form_Input(
+	'filtertext',
+	'Filter',
+	'text',
+	$filtertext,
+	['placeholder' => 'Filter text']
+));
+
+$form->addGlobal(new Form_Button(
+	'filtersubmit',
+	'Filter'
+))->removeClass('btn-primary')->addClass('btn-default')->addClass('btn-sm');
+
+$form->addGlobal(new Form_Button(
+	'clear',
+	'Clear log'
+))->removeClass('btn-primary')->addClass('btn-danger')->addClass('btn-sm');
+
+$form->add($section);
+print $form;
 ?>
-  </td></tr>
-  <tr><td class="tabnavtbl">
+    <div class="panel panel-default">
+        <div class="panel-heading"><?=gettext("Wireless (hostapd) log entries ")?></div>
+	    <pre>
 <?php
-	$tab_array = array();
-	$tab_array[] = array(gettext("General"), false, "/diag_logs.php");
-	$tab_array[] = array(gettext("Gateways"), false, "/diag_logs_gateways.php");
-	$tab_array[] = array(gettext("Routing"), false, "/diag_logs_routing.php");
-	$tab_array[] = array(gettext("Resolver"), false, "/diag_logs_resolver.php");
-	$tab_array[] = array(gettext("Wireless"), true, "/diag_logs_wireless.php");
-        display_top_tabs($tab_array);
+
+    	if($filtertext)
+    		dump_clog_no_table($$wireless_logfile, $nentries, true, array("$filtertext"));
+    	else
+    		dump_clog_no_table($wireless_logfile, $nentries, true, array());
+    		
 ?>
-                </td>
-        </tr>
-  <tr>
-    <td>
-	<div id="mainarea">
-		<table class="tabcont" width="100%" border="0" cellspacing="0" cellpadding="0" summary="main area">
-		  <tr>
-			<td colspan="2" class="listtopic">
-			  <?php printf(gettext("Wireless (hostapd) log entries"),$nentries);?></td>
-		  </tr>
-		  <?php dump_clog($wireless_logfile, $nentries); ?>
-		<tr><td><br /><form action="diag_logs_wireless.php" method="post">
-<input name="clear" type="submit" class="formbtn" value="<?=gettext("Clear log"); ?>" /></form></td></tr>
-		</table>
+    	</pre>
 	</div>
-	</td>
-  </tr>
-</table>
-<?php include("fend.inc"); ?>
-</body>
-</html>
+
+<?php include("foot.inc"); ?>
