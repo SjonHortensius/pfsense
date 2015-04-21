@@ -32,8 +32,8 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-/*		
-	pfSense_MODULE:	system
+/*
+	pfSense_MODULE: system
 */
 
 ##|+PRIV
@@ -51,7 +51,7 @@ $nentries = $config['syslog']['nentries'];
 if (!$nentries)
 	$nentries = 50;
 
-if ($_POST['clear']) 
+if ($_POST['clear'])
 	clear_log_file($system_logfile);
 
 if ($_GET['filtertext'])
@@ -121,16 +121,16 @@ $form->add($section);
 print $form;
 
 ?>
-    <div class="panel panel-default">
-        <div class="panel-heading"><?=gettext("Last ")?><?=$nentries?><?=gettext(" log entries")?></div>
-	    <pre>
+	<div class="panel panel-default">
+		<div class="panel-heading"><?=gettext("Last ")?><?=$nentries?><?=gettext(" log entries")?></div>
+		<pre>
 <?php
-    	if($filtertext)
-    		dump_clog_no_table($system_logfile, $nentries, true, array("$filtertext"), array("ppp"));
-    	else
-    		dump_clog_no_table($system_logfile, $nentries, true, array(), array("ppp"));
+		if($filtertext)
+			dump_clog_no_table($system_logfile, $nentries, true, array("$filtertext"), array("ppp"));
+		else
+			dump_clog_no_table($system_logfile, $nentries, true, array(), array("ppp"));
 ?>
-    	</pre>
+		</pre>
 	</div>
 
 <?php include("foot.inc"); ?>
