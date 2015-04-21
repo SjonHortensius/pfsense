@@ -73,7 +73,7 @@ $tab_array[] = array(gettext("Settings"), false, "diag_logs_settings.php");
 display_top_tabs($tab_array);
 
 $tab_array = array();
-$tab_array[] = array(gettext("General"), flase, "/diag_logs.php");
+$tab_array[] = array(gettext("General"), false, "/diag_logs.php");
 $tab_array[] = array(gettext("Gateways"), false, "/diag_logs_gateways.php");
 $tab_array[] = array(gettext("Routing"), false, "/diag_logs_routing.php");
 $tab_array[] = array(gettext("Resolver"), false, "/diag_logs_resolver.php");
@@ -113,7 +113,7 @@ print $form;
 <?php
 
     	if($filtertext)
-    		dump_clog_no_table($$wireless_logfile, $nentries, true, array("$filtertext"));
+    		dump_clog_no_table($wireless_logfile, $nentries, true, array("$filtertext"));
     	else
     		dump_clog_no_table($wireless_logfile, $nentries, true, array());
     		
