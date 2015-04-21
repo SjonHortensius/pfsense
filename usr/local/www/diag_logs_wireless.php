@@ -32,8 +32,8 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-/*		
-	pfSense_MODULE:	system
+/*
+	pfSense_MODULE: system
 */
 
 ##|+PRIV
@@ -51,7 +51,7 @@ $nentries = $config['syslog']['nentries'];
 if (!$nentries)
 	$nentries = 50;
 
-if ($_POST['clear']) 
+if ($_POST['clear'])
 	clear_log_file($wireless_logfile);
 
 $pgtitle = array(gettext("Status"),gettext("System logs"),gettext("Wireless"));
@@ -107,18 +107,18 @@ $form->addGlobal(new Form_Button(
 $form->add($section);
 print $form;
 ?>
-    <div class="panel panel-default">
-        <div class="panel-heading"><?=gettext("Wireless (hostapd) log entries ")?></div>
-	    <pre>
+	<div class="panel panel-default">
+		<div class="panel-heading"><?=gettext("Wireless (hostapd) log entries ")?></div>
+		<pre>
 <?php
 
-    	if($filtertext)
-    		dump_clog_no_table($wireless_logfile, $nentries, true, array("$filtertext"));
-    	else
-    		dump_clog_no_table($wireless_logfile, $nentries, true, array());
-    		
+		if($filtertext)
+			dump_clog_no_table($wireless_logfile, $nentries, true, array("$filtertext"));
+		else
+			dump_clog_no_table($wireless_logfile, $nentries, true, array());
+
 ?>
-    	</pre>
+		</pre>
 	</div>
 
 <?php include("foot.inc"); ?>
