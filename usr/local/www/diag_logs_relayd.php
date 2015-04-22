@@ -53,6 +53,9 @@ if (!$nentries)
 if ($_POST['clear'])
 	clear_log_file($relayd_logfile);
 
+if ($_POST['filtertext'])
+	$filtertext = htmlspecialchars($_POST['filtertext']);
+	
 $pgtitle = array(gettext("Status"),gettext("System logs"),gettext("Load Balancer"));
 $shortcut_section = "relayd";
 include("head.inc");
