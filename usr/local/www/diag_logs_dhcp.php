@@ -101,9 +101,9 @@ $form->addGlobal(new Form_Button(
 
 $form->add($section);
 print $form;
-
-print('<div class="alert alert-warning" role="alert">' . gettext("NOTE: Clearing the log file will restart the DHCP daemon") . '</div>');
 ?>
+
+<div class="alert alert-warning" role="alert">NOTE: Clearing the log file will restart the DHCP daemon</div>
 
 <div class="panel panel-default">
 	<div class="panel-heading"><?=gettext("Last ")?><?=$nentries?><?=gettext(" DHCP service log entries")?></div>
