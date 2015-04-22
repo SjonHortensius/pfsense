@@ -57,6 +57,9 @@ if ($_POST['clear']) {
 	services_dhcpd_configure();
 }
 
+if ($_POST['filtertext'])
+	$filtertext = htmlspecialchars($_POST['filtertext']);
+
 $pgtitle = array(gettext("Status"),gettext("System logs"),gettext("DHCP"));
 $shortcut_section = "dhcp";
 include("head.inc");
