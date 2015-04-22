@@ -58,6 +58,9 @@ if (!$nentries)
 if ($_POST['clear'])
 	clear_log_file($openvpn_logfile);
 
+if ($_POST['filtertext'])
+	$filtertext = htmlspecialchars($_POST['filtertext']);
+	
 include("head.inc");
 
 $tab_array = array();
