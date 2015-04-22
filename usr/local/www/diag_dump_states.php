@@ -144,7 +144,6 @@ include("head.inc");
 		   print('<input type="submit" class="btn btn-danger btn-sm formbtn" name="killfilter" value="Kill">');
 ?>
 
-	&nbsp;
 	</div>
 
 	</form>
