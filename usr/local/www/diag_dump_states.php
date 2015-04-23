@@ -54,11 +54,11 @@ if(isset($_POST['action']) && $_POST['action'] == "remove") {
 	return;
 }
 
-if (isset($_POST['filter']) && isset($_POST['killfilter'])) {
-	if (is_ipaddr($_POST['filter'])) {
-		$tokill = $_POST['filter'] . "/32";
-	} elseif (is_subnet($_POST['filter'])) {
-		$tokill = $_POST['filter'];
+if (isset($_POST['filtertext']) && isset($_POST['killfilter'])) {
+	if (is_ipaddr($_POST['filtertext'])) {
+		$tokill = $_POST['filtertext'] . "/32";
+	} elseif (is_subnet($_POST['filtertext'])) {
+		$tokill = $_POST['filtertext'];
 	} else {
 		// Invalid filter
 		$tokill = "";
@@ -71,7 +71,6 @@ if (isset($_POST['filter']) && isset($_POST['killfilter'])) {
 
 $pgtitle = array(gettext("Diagnostics"),gettext("Show States"));
 include("head.inc");
-
 ?>
 
 <script type="text/javascript">
@@ -113,121 +112,128 @@ include("head.inc");
 //]]>
 </script>
 
-<div class="panel panel-default">
-
 <?php
-	$tab_array = array();
-	$tab_array[] = array(gettext("States"), true, "diag_dump_states.php");
-	if (isset($config['system']['lb_use_sticky']))
-		$tab_array[] = array(gettext("Source Tracking"), false, "diag_dump_states_sources.php");
-	$tab_array[] = array(gettext("Reset States"), false, "diag_resetstate.php");
-	display_top_tabs($tab_array);
+$tab_array = array();
+$tab_array[] = array(gettext("States"), true, "diag_dump_states.php");
+if (isset($config['system']['lb_use_sticky']))
+	$tab_array[] = array(gettext("Source Tracking"), false, "diag_dump_states_sources.php");
+$tab_array[] = array(gettext("Reset States"), false, "diag_resetstate.php");
+display_top_tabs($tab_array);
+
+// Start of tab content
+$current_statecount=`pfctl -si | grep "current entries" | awk '{ print $3 }'`;
+
+require('classes/Form.class.php');
+
+$form = new Form(false);
+
+$section = new Form_Section('State filter');
+
+$section->addInput(new Form_Input(
+	'filtertext',
+	'Filter expression',
+	'text',
+	htmlspecialchars($_POST['filtertext']),
+	['placeholder' => '']
+));
+
+$section->addInput(new Form_StaticText(
+	'',
+	 new Form_Button('filter', 'Filter', null)
+));
+
+if (isset($_POST['filtertext']) && (is_ipaddr($_POST['filtertext']) || is_subnet($_POST['filtertext']))) {
+$section->addInput(new Form_StaticText(
+	'Kill filtered states',
+	new Form_Button(
+		'killfilter',
+		'	Kill   '
+	)))->setHelp('Remove all states to and from the filtered address');
+}
+
+$form->add($section);
+print $form;
 ?>
 
-<br>
+<script>
+	document.getElementById("filter").className = "btn btn-default btn-sm";
+	document.getElementById("killfilter").className = "btn btn-danger btn-sm";
+</script>
 
-<!-- Start of tab content -->
-
+<table class="table table-striped table-hover table-compact" summary="results">
+	<thead>
+		<tr class="info">
+			<th class="col-md-1"><?=gettext("Int")?></th>
+			<th class="col-md-1"><?=gettext("Proto")?></th>
+			<th class="col-md-5"><?=gettext("Source -> Router -> Destination")?></th>
+			<th class="col-md-4"><?=gettext("State")?></th>
+			<th class="col-md-1"></th> <!-- For the optional "Remove" button -->
+		</tr>
+	</thead>
+	<tbody>
 <?php
-	$current_statecount=`pfctl -si | grep "current entries" | awk '{ print $3 }'`;
+	$row = 0;
+	/* get our states */
+	$grepline = (isset($_POST['filtertext'])) ? "| /usr/bin/egrep " . escapeshellarg(htmlspecialchars($_POST['filtertext'])) : "";
+	$fd = popen("/sbin/pfctl -s state {$grepline}", "r" );
+	while ($line = chop(fgets($fd))) {
+		if($row >= 10000)
+			break;
+
+		$line_split = preg_split("/\s+/", $line);
+
+		$iface	= array_shift($line_split);
+		$proto = array_shift($line_split);
+		$state = array_pop($line_split);
+		$info  = implode(" ", $line_split);
+
+		// We may want to make this optional, with a large state table, this could get to be expensive.
+		$iface = convert_real_interface_to_friendly_descr($iface);
+
+		/* break up info and extract $srcip and $dstip */
+		$ends = preg_split("/\<?-\>?/", $info);
+		$parts = explode(":", $ends[0]);
+		$srcip = trim($parts[0]);
+		$parts = explode(":", $ends[count($ends) - 1]);
+		$dstip = trim($parts[0]);
 ?>
 
-	<form action="<?=$_SERVER['SCRIPT_NAME']?>" method="post" name="iform">
-	<?=gettext("&nbsp;Current total state count")?>: <?= $current_statecount ?>
-	<div class="pull-right">
-		<?=gettext("Filter expression:")?>
-		<input type="text" name="filter" class="formfld search" value="<?=htmlspecialchars($_POST['filter'])?>" size="30" />
-		<input type="submit" class="btn btn-primary btn-sm formbtn" value="<?=gettext("Filter")?>" />
+		<tr id="r:<?= $srcip ?>:<?= $dstip ?>">
+			<td><?= $iface ?></td>
+			<td><?= $proto ?></td>
+			<td><?= $info ?></td>
+			<td><?= $state ?></td>
 
-<?php
-		if (isset($_POST['filter']) && (is_ipaddr($_POST['filter']) || is_subnet($_POST['filter'])))
-		   print('<input type="submit" class="btn btn-danger btn-sm formbtn" name="killfilter" value="Kill">');
-?>
-
-	</div>
-
-	</form>
-	<br>
-	<table class="table table-striped table-hover table-compact" summary="results">
-		<thead>
-			<tr class="info">
-				<th width="5%"><?=gettext("Int")?></th>
-				<th width="5%"><?=gettext("Proto")?></th>
-				<th width="65"><?=gettext("Source -> Router -> Destination")?></th>
-				<th width="24%"><?=gettext("State")?></th>
-				<th width="1%"></th>
-			</tr>
-		</thead>
-		<tbody>
-<?php
-
-$row = 0;
-/* get our states */
-$grepline = (isset($_POST['filter'])) ? "| /usr/bin/egrep " . escapeshellarg(htmlspecialchars($_POST['filter'])) : "";
-$fd = popen("/sbin/pfctl -s state {$grepline}", "r" );
-while ($line = chop(fgets($fd))) {
-	if($row >= 10000)
-		break;
-
-	$line_split = preg_split("/\s+/", $line);
-
-	$iface	= array_shift($line_split);
-	$proto = array_shift($line_split);
-	$state = array_pop($line_split);
-	$info  = implode(" ", $line_split);
-
-	// We may want to make this optional, with a large state table, this could get to be expensive.
-	$iface = convert_real_interface_to_friendly_descr($iface);
-
-	/* break up info and extract $srcip and $dstip */
-	$ends = preg_split("/\<?-\>?/", $info);
-	$parts = explode(":", $ends[0]);
-	$srcip = trim($parts[0]);
-	$parts = explode(":", $ends[count($ends) - 1]);
-	$dstip = trim($parts[0]);
-
-?>
-        
-	<tr id="r:<?= $srcip ?>:<?= $dstip ?>">
-		<td><?= $iface ?></td>
-		<td><?= $proto ?></td>
-		<td><?= $info ?></td>
-		<td><?= $state ?></td>
-
-		<td>
-		
-		<a class="btn btn-xs btn-default"
-			onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" name="i:<?= $srcip ?>:<?= $dstip ?>"
-			title="<?= gettext('Remove all state entries from ') ?><?= $srcip ?><?= gettext(' to ') ?><?= $dstip ?>" alt="">Remove</a>
-						
-		</td>
-	</tr>
+			<td>
+				<a class="btn btn-xs btn-danger"
+				   onclick="removeState('<?= $srcip ?>', '<?= $dstip ?>');" name="i:<?= $srcip ?>:<?= $dstip ?>"
+				   title="<?= gettext('Remove all state entries from ') ?><?= $srcip ?><?= gettext(' to ') ?><?= $dstip ?>" alt="">Remove</a>
+			</td>
+		</tr>
 <?php
 	$row++;
 }
 
 if ($row == 0): ?>
-	<tr>
-		<td colspan="4" align="center">
-		<?= gettext("No states were found.") ?>
-		</td>
-	</tr>
-
+		<tr>
+			<td colspan="4" align="center">
+				<?= gettext("No states were found.") ?>
+			</td>
+		</tr>
 <?php endif;
 
 pclose($fd);
 ?>
-
-	<tr>
-		<td colspan="4" align="center">
-		<?php if (isset($_POST['filter']) && !empty($_POST['filter'])): ?>
-			<?=gettext("States matching current filter")?>: <?= $row ?>
-		<?php endif; ?>
-		</td>
-	</tr>
-
+		<tr>
+			<td colspan="5" align="center">
+<?php
+				if (isset($_POST['filtertext']) && !empty($_POST['filtertext'])): ?>
+					<?=gettext("States matching current filter")?>: <?= $row ?>
+<?php
+				endif; ?>
+			</td>
+		</tr>
 	</tbody>
 </table>
-</div>
-<?php include("foot.inc"); ?>
 
+<?php include("foot.inc"); ?>
