@@ -75,58 +75,65 @@ if ($_POST) {
 $pgtitle = array(gettext("Diagnostics"), gettext("Reset state"));
 include("head.inc");
 
-if ($input_errors) print_input_errors($input_errors);if ($savemsg)
+if ($input_errors) 
+    print_input_errors($input_errors);
+    
+if ($savemsg)
 	print('<div class="alert alert-success" role="alert">'.$savemsg.'</div>');
+	
+$statetabelhelp =   'Resetting the state tables will remove all entries from the corresponding tables. This means that all open connections ' .
+				    'will be broken and will have to be re-established. This may be necessary after making substantial changes to the ' .
+				    'firewall and/or NAT rules, especially if there are IP protocol mappings (e.g. for PPTP or IPv6) with open connections.' .
+		            '<br /><br />' .
+		            'The firewall will normally leave the state tables intact when changing rules.' .
+		            '<br /><br />' .
+		            '<strong>NOTE:</strong> If you reset the firewall state table, the browser session may appear to be hung after clicking &quot;Reset&quot;. ' .
+				    'Simply refresh the page to continue.';
+				  
+$sourcetablehelp = 	'Resetting the source tracking table will remove all source/destination associations. ' .
+					'This means that the \"sticky\" source/destination association ' .
+					'will be cleared for all clients.' .
+			        ' <br /><br />' .
+			        'This does not clear active connection states, only source tracking.';				  
+
+$tab_array = array();
+$tab_array[] = array(gettext("States"), false, "diag_dump_states.php");
+if (isset($config['system']['lb_use_sticky']))
+	$tab_array[] = array(gettext("Source Tracking"), false, "diag_dump_states_sources.php");
+	$tab_array[] = array(gettext("Reset States"), true, "diag_resetstate.php");
+	display_top_tabs($tab_array);
+
+require('classes/Form.class.php');
+
+$form = new Form(new Form_Button(
+	'Submit',
+	gettext('Reset')
+));
+
+$section = new Form_Section('Select states to reset');
+
+$section->addInput(new Form_Checkbox(
+	'statetable',
+	'State Table',
+	'Reset the firewall state table',
+	true
+))->setHelp($statetabelhelp);
+
+if(DEBUG || isset($config['system']['lb_use_sticky'])) {
+    $section->addInput(new Form_Checkbox(
+    	'sourcetracking',
+    	'Source Tracking',
+    	'Reset firewall source tracking',
+    	true
+    ))->setHelp($sourcetablehelp);
+}
+
+$form->add($section);
+print $form;
 ?>
 
-<div class="panel panel-default">
-<?php
-	$tab_array = array();
-	$tab_array[] = array(gettext("States"), false, "diag_dump_states.php");
-	if (isset($config['system']['lb_use_sticky']))
-		$tab_array[] = array(gettext("Source Tracking"), false, "diag_dump_states_sources.php");
-		$tab_array[] = array(gettext("Reset States"), true, "diag_resetstate.php");
-		display_top_tabs($tab_array);
-?>
-
-    <form action="diag_resetstate.php" method="post" name="iform" id="iform">
-		<div class="panel-body">
-			<div class="checkbox"><label><input name="statetable"  type="checkbox" id="statetable" value="yes" checked="checked">
-				<?= gettext("Reset the firewall state table"); ?></label>
-			</div>
-
-		    <?=gettext( "Resetting the state tables will remove all entries from the corresponding tables. This means that all open connections " .
-					    "will be broken and will have to be re-established. This may be necessary after making substantial changes to the " .
-					    "firewall and/or NAT rules, especially if there are IP protocol mappings (e.g. for PPTP or IPv6) with open connections."); ?>
-		    <br /><br />
-		    <?=gettext( "The firewall will normally leave the state tables intact when changing rules."); ?>
-		    <br /><br />
-		    <?=gettext( "NOTE: If you reset the firewall state table, the browser session may appear to be hung after clicking &quot;Reset&quot;. " .
-					    "Simply refresh the page to continue."); ?>
-		    </div>
-    	</div>
-		
-<?php 
-        if (isset($config['system']['lb_use_sticky']) || DEBUG): 
-?>
-		<div class="panel panel-default">
-			<div class="panel-body">
-				<div class="checkbox"><label><input name="sourcetracking" class="checkbox" type="checkbox" id="sourcetracking" value="yes" checked="checked">
-					 <?= gettext("Firewall Source Tracking"); ?><br />
-				</div>
-
-			    <?=gettext( "Resetting the source tracking table will remove all source/destination associations. " .
-						    "This means that the \"sticky\" source/destination association " .
-						    "will be cleared for all clients."); ?>
-			    <br /><br />
-			    <?=gettext("This does not clear active connection states, only source tracking."); ?>
-			    <br />
-			</div>
-		</div>
-		<?php endif; ?>
-
-	<input name="Submit" type="submit" class="btn btn-danger" value="<?=gettext("Reset"); ?>" />
-</form>
-</div>
+<script>
+	document.getElementById("Submit").className = "btn btn-danger";
+</script>
 
 <?php include("foot.inc"); ?>
