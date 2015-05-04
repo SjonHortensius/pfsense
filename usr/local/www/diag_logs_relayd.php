@@ -31,8 +31,8 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-/*	
-	pfSense_MODULE:	routing
+/*
+	pfSense_MODULE: routing
 */
 
 ##|+PRIV
@@ -50,51 +50,68 @@ $nentries = $config['syslog']['nentries'];
 if (!$nentries)
 	$nentries = 50;
 
-if ($_POST['clear']) 
+if ($_POST['clear'])
 	clear_log_file($relayd_logfile);
 
+if ($_POST['filtertext'])
+	$filtertext = htmlspecialchars($_POST['filtertext']);
+	
 $pgtitle = array(gettext("Status"),gettext("System logs"),gettext("Load Balancer"));
 $shortcut_section = "relayd";
 include("head.inc");
 
+$tab_array = array();
+$tab_array[] = array(gettext("System"), false, "diag_logs.php");
+$tab_array[] = array(gettext("Firewall"), false, "diag_logs_filter.php");
+$tab_array[] = array(gettext("DHCP"), false, "diag_logs_dhcp.php");
+$tab_array[] = array(gettext("Portal Auth"), false, "diag_logs_auth.php");
+$tab_array[] = array(gettext("IPsec"), false, "diag_logs_ipsec.php");
+$tab_array[] = array(gettext("PPP"), false, "diag_logs_ppp.php");
+$tab_array[] = array(gettext("VPN"), false, "diag_logs_vpn.php");
+$tab_array[] = array(gettext("Load Balancer"), true, "diag_logs_relayd.php");
+$tab_array[] = array(gettext("OpenVPN"), false, "diag_logs_openvpn.php");
+$tab_array[] = array(gettext("NTP"), false, "diag_logs_ntpd.php");
+$tab_array[] = array(gettext("Settings"), false, "diag_logs_settings.php");
+display_top_tabs($tab_array);
+
+require('classes/Form.class.php');
+
+$form = new Form(false);
+
+$section = new Form_Section('Log file filter');
+
+$section->addInput(new Form_Input(
+	'filtertext',
+	'Filter',
+	'text',
+	$filtertext,
+	['placeholder' => 'Filter text']
+));
+
+$form->addGlobal(new Form_Button(
+	'filtersubmit',
+	'Filter'
+))->removeClass('btn-primary')->addClass('btn-default')->addClass('btn-sm');
+
+$form->addGlobal(new Form_Button(
+	'clear',
+	'Clear log'
+))->removeClass('btn-primary')->addClass('btn-danger')->addClass('btn-sm');
+
+$form->add($section);
+print $form;
 ?>
 
-<body link="#0000CC" vlink="#0000CC" alink="#0000CC">
-<?php include("fbegin.inc"); ?>
-<table width="100%" border="0" cellpadding="0" cellspacing="0" summary="load balancer">
-  <tr><td>
+<div class="panel panel-default">
+	<div class="panel-heading"><?=gettext("Last ")?><?=$nentries?><?=gettext(" Load Balancer log entries")?></div>
+	<pre>
 <?php
-	$tab_array = array();
-	$tab_array[] = array(gettext("System"), false, "diag_logs.php");
-	$tab_array[] = array(gettext("Firewall"), false, "diag_logs_filter.php");
-	$tab_array[] = array(gettext("DHCP"), false, "diag_logs_dhcp.php");
-	$tab_array[] = array(gettext("Portal Auth"), false, "diag_logs_auth.php");
-	$tab_array[] = array(gettext("IPsec"), false, "diag_logs_ipsec.php");
-	$tab_array[] = array(gettext("PPP"), false, "diag_logs_ppp.php");
-	$tab_array[] = array(gettext("VPN"), false, "diag_logs_vpn.php");
-	$tab_array[] = array(gettext("Load Balancer"), true, "diag_logs_relayd.php");
-	$tab_array[] = array(gettext("OpenVPN"), false, "diag_logs_openvpn.php");
-	$tab_array[] = array(gettext("NTP"), false, "diag_logs_ntpd.php");
-	$tab_array[] = array(gettext("Settings"), false, "diag_logs_settings.php");
-	display_top_tabs($tab_array);
+	if($filtertext)
+		dump_clog_no_table($relayd_logfile, $nentries, true, array("$filtertext"), array("ppp"));
+	else
+		dump_clog_no_table($relayd_logfile, $nentries, true, array(), array("ppp"));
 ?>
-  </td></tr>
-  <tr>
-    <td>
-	<div id="mainarea">
-		<table class="tabcont" width="100%" border="0" cellspacing="0" cellpadding="0" summary="main area">
-		  <tr>
-			<td colspan="2" class="listtopic">
-			  <?php printf(gettext("Last %s Load Balancer log entries"),$nentries);?></td>
-		  </tr>
-		  <?php dump_clog($relayd_logfile, $nentries); ?>
-		<tr><td><br /><form action="diag_logs_relayd.php" method="post">
-<input name="clear" type="submit" class="formbtn" value="<?=gettext("Clear log"); ?>" /></form></td></tr>
-		</table>
-	</div>
-	</td>
-  </tr>
-</table>
-<?php include("fend.inc"); ?>
-</body>
-</html>
+	</pre>
+</div>
+
+<?php include("foot.inc"); ?>
