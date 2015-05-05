@@ -73,48 +73,49 @@ display_top_tabs($tab_array);
 <?php
 if (count($spd)){
 ?>
-	<table class="table table-striped table-hover table-condensed">
-		<thead>
-			<tr>
-				<th><?= gettext("Source"); ?></th>
-				<th><?= gettext("Destination"); ?></th>
-				<th><?= gettext("Direction"); ?></th>
-				<th><?= gettext("Protocol"); ?></th>
-				<th><?= gettext("Tunnel endpoints"); ?></th>
-			</tr>
-		</thead>
+	<div class="table-responsive">
+		<table class="table table-striped table-hover table-condensed">
+			<thead>
+				<tr>
+					<th><?= gettext("Source"); ?></th>
+					<th><?= gettext("Destination"); ?></th>
+					<th><?= gettext("Direction"); ?></th>
+					<th><?= gettext("Protocol"); ?></th>
+					<th><?= gettext("Tunnel endpoints"); ?></th>
+				</tr>
+			</thead>
 
-		<tbody>
+			<tbody>
 <?php
-	foreach ($spd as $sp) {
-		if($sp['dir'] == 'in')
-			$dirstr = LEFTARROW . ' Inbound';
-		else
-			$dirstr = RIGHTARROW . ' Outbound';
+		foreach ($spd as $sp) {
+			if($sp['dir'] == 'in')
+				$dirstr = LEFTARROW . ' Inbound';
+			else
+				$dirstr = RIGHTARROW . ' Outbound';
 ?>
-			<tr>
-				<td>
-					<?=htmlspecialchars($sp['srcid'])?>
-				</td>
-				<td>
-					<?=htmlspecialchars($sp['dstid'])?>
-				</td>
-				<td>
-					<?=$dirstr ?>
-				</td>
-				<td>
-					<?=htmlspecialchars(strtoupper($sp['proto']))?>
-				</td>
-				<td>
-					<?=htmlspecialchars($sp['src'])?> -> <?=htmlspecialchars($sp['dst'])?>
-				</td>
-			</tr>
+				<tr>
+					<td>
+						<?=htmlspecialchars($sp['srcid'])?>
+					</td>
+					<td>
+						<?=htmlspecialchars($sp['dstid'])?>
+					</td>
+					<td>
+						<?=$dirstr ?>
+					</td>
+					<td>
+						<?=htmlspecialchars(strtoupper($sp['proto']))?>
+					</td>
+					<td>
+						<?=htmlspecialchars($sp['src'])?> -> <?=htmlspecialchars($sp['dst'])?>
+					</td>
+				</tr>
 <?php
-	}
+		}
 ?>
-		</tbody>
-	</table>
-
+			</tbody>
+		</table>
+	</div>
 <?php
 	 } // e-o-if (count($spd))
 else {
