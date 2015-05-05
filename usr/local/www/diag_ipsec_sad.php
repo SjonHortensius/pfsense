@@ -80,7 +80,7 @@ display_top_tabs($tab_array);
 
 if (count($sad)) {
 ?>
-	<div table-responsive>
+	<div class="table-responsive">
 		<table class="table table-striped table-hover table-condensed">
 			<thead>
 				<tr>
