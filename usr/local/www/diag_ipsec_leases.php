@@ -50,8 +50,15 @@ $shortcut_section = "ipsec";
 include("head.inc");
 
 if(DEBUG)  { // Dummy data for layout testing. REMOVE before production.
-	$mobile = array('pool' => array( 0 => array( 'name' => '172.27.113.0/24',  'size' => '254',	 'usage' => '1', 'online' => '1', 'lease' => array(0 => array('id' => 'Firstly', 'status' => 'Ready', 'host' => '192.168.1.43')) ),
-									 1 => array( 'name' => '192.48.111.0/24',  'size' => '254',	 'usage' => '1', 'online' => '1', 'lease' => array(0 => array('id' => 'Second', 'status' => 'Ready', 'host' => '192.168.8.20')))));
+	$mobile = array('pool' => array( 0 => array( 'name' => '172.27.113.0/24',  'size' => '254',	 'usage' => '1', 'online' => '1',
+												 'lease' => array(0 => array('id' => 'Firstly', 'status' => 'Ready', 'host' => '192.168.1.43'),
+																 1	=> array('id' => 'Who', 'status' => 'Ready', 'host' => '10.255.255.7'))),
+									 1 => array( 'name' => '192.48.111.0/24',  'size' => '254',	 'usage' => '1', 'online' => '1',
+												 'lease' => array(0 => array('id' => 'Second', 'status' => 'Ready', 'host' => '192.168.8.20'))),
+									 2 => array( 'name' => '172.48.222.0/24',  'size' => '254',	 'usage' => '1', 'online' => '1'),
+									 3 => array( 'name' => '192.48.111.0/24',  'size' => '254',	 'usage' => '1', 'online' => '1',
+												 'lease' => array(0 => array('id' => 'Second', 'status' => 'Ready', 'host' => '192.168.8.20')))
+									 ));
 }
 else
 	$mobile = ipsec_dump_mobile();
@@ -65,53 +72,76 @@ $tab_array4 = array(gettext("Logs"), false, "diag_logs.php?logfile=ipsec");
 display_top_tabs($tab_array);
 
 if (isset($mobile['pool']) && is_array($mobile['pool'])) {
-	foreach($mobile['pool'] as $pool) {
 ?>
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<strong><?=gettext("Pool: ") . $pool['name'] . ' ' . gettext("Usage: ") . $pool['usage'] . ' ' . gettext("Online: ") . $pool['online']?></strong>
-			</div>
-			<div class="panel-body">
+	<div class="table-responsive">
+		<table class="table table-hover table-condensed">
+			<thead>
+				<tr>
+					<th><?=gettext("Pool")?></th>
+					<th><?=gettext("Usage")?></th>
+					<th><?=gettext("Online")?></th>
+					<th><?=gettext("ID")?></th>
+					<th><?=gettext("Host")?></th>
+					<th><?=gettext("Status")?></th>
+				</tr>
+			</thead>
+			<tbody>
 <?php
-				if (is_array($pool['lease']) && count($pool['lease']) > 0) {  ?>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover table-condensed">
-							<thead>
-								<tr>
-									<th><?=gettext("ID")?></th>
-									<th><?=gettext("Host")?></th>
-									<th><?=gettext("Status")?></th>
-								</tr>
-							</thead>
-							<tbody>
-<?php
-							foreach ($pool['lease'] as $lease) { ?>
-								<tr>
-									<td>
-										<?=htmlspecialchars($lease['id'])?>
-									</td>
-									<td>
-										<?=htmlspecialchars($lease['host'])?>
-									</td>
-									<td>
-										<?=htmlspecialchars($lease['status'])?>
-									</td>
-								</tr>
+			foreach($mobile['pool'] as $pool) {
+				// The first row of each pool includes the pool information
+?>
+				<tr>
+					<td>
+						<?=$pool['name']?>
+					</td>
+					<td>
+						<?=$pool['usage']?>
+					</td>
+					<td>
+						<?=$pool['online']?>
+					</td>
 
-<?php						}
+<?php
+				$leaserow = true;
+				if (is_array($pool['lease']) && count($pool['lease']) > 0) {
+					foreach ($pool['lease'] as $lease) {
+						if(!$leaserow) {
+							// On subsequent rows the first three columns are blank
 ?>
-							</tbody>
-						</table>
-					</div>
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+<?php
+						}
+						$leaserow = false;
+?>
+					<td>
+						<?=htmlspecialchars($lease['id'])?>
+					</td>
+					<td>
+						<?=htmlspecialchars($lease['host'])?>
+					</td>
+					<td>
+						<?=htmlspecialchars($lease['status'])?>
+					</td>
+				</tr>
+<?php
+
+					}
+				}
+				else {
+?>
+					<td colspan="3" class="warning" align="center"><?=gettext('No leases from this pool yet.')?></td>
+				</tr>
 <?php
 				}
-				else
-					print_info_box(gettext('No leases from this pool yet.'));
+			}
 ?>
-				</div>
-			</div>
+			</tbody>
+		</table>
+	</div>
 <?php
-	}
 }
 else
 	print_info_box(gettext('No IPsec pools.'));
