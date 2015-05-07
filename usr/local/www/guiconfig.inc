@@ -29,7 +29,7 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 /*
-	pfSense_MODULE:	base
+	pfSense_MODULE: base
 */
 
 /* Include authentication routines */
@@ -37,7 +37,7 @@
 if(!$nocsrf) {
 	function csrf_startup() {
 		csrf_conf('rewrite-js', '/csrf/csrf-magic.js');
-		$timeout_minutes = isset($config['system']['webgui']['session_timeout']) ?  $config['system']['webgui']['session_timeout'] : 240;
+		$timeout_minutes = isset($config['system']['webgui']['session_timeout']) ?	$config['system']['webgui']['session_timeout'] : 240;
 		csrf_conf('expires', $timeout_minutes * 60);
 	}
 	require_once("csrf/csrf-magic.php");
@@ -577,25 +577,28 @@ function dump_clog_no_table($logfile, $tail, $withorig = true, $grepfor = "", $g
 	}
 	echo "\n";
 
+	$rows = 0;
 	foreach ($logarr as $logent) {
-			$logent = preg_split("/\s+/", $logent, 6);
+		$rows++;
+		$logent = preg_split("/\s+/", $logent, 6);
 
-			if ($withorig) {
-					if(isset($config['system']['usefifolog'])) {
-						$entry_date_time = htmlspecialchars(date("F j, Y, g:i a","" . $logent[1] . ""));
-						$entry_text = htmlspecialchars($logent[5]);
-					} else {
-						$entry_date_time = htmlspecialchars(join(" ", array_slice($logent, 0, 3)));
-						$entry_text = ($logent[3] ==  $config['system']['hostname']) ? "" : $logent[3] . " ";
-						$entry_text .= htmlspecialchars($logent[4] . " " . $logent[5]);
-					}
-					echo "{$entry_date_time}";
-					echo " " . "{$entry_text}"  . "\n";
-			} else {
-					echo htmlspecialchars($logent[5]) . "\n";
-			}
+		if ($withorig) {
+				if(isset($config['system']['usefifolog'])) {
+					$entry_date_time = htmlspecialchars(date("F j, Y, g:i a","" . $logent[1] . ""));
+					$entry_text = htmlspecialchars($logent[5]);
+				} else {
+					$entry_date_time = htmlspecialchars(join(" ", array_slice($logent, 0, 3)));
+					$entry_text = ($logent[3] ==  $config['system']['hostname']) ? "" : $logent[3] . " ";
+					$entry_text .= htmlspecialchars($logent[4] . " " . $logent[5]);
+				}
+				echo "{$entry_date_time}";
+				echo " " . "{$entry_text}"	. "\n";
+		} else {
+				echo htmlspecialchars($logent[5]) . "\n";
+		}
 
 	}
+	return($rows);
 }
 
 function dump_clog($logfile, $tail, $withorig = true, $grepfor = "", $grepinvert = "") {
@@ -816,7 +819,7 @@ function outputJavaScriptFileInline($javascript) {
 		include($javascript);
 		echo "\n</script>\n";
 	} else {
-		echo "\n\n<!-- Could not location file:  {$javascript} -->\n\n";
+		echo "\n\n<!-- Could not location file:	 {$javascript} -->\n\n";
 	}
 }
 
@@ -828,7 +831,7 @@ function outputCSSPrintFileInline($css) {
 		include($css);
 		echo "\n</style>\n";
 	} else {
-		echo "\n\n<!-- Could not location file:  {$css} -->\n\n";
+		echo "\n\n<!-- Could not location file:	 {$css} -->\n\n";
 	}
 }
 
@@ -839,7 +842,7 @@ function outputCSSFileInline($css) {
 		include($css);
 		echo "\n</style>\n";
 	} else {
-		echo "\n\n<!-- Could not location file:  {$css} -->\n\n";
+		echo "\n\n<!-- Could not location file:	 {$css} -->\n\n";
 	}
 }
 
@@ -943,11 +946,11 @@ function echo_array($array,$return_me=false){
 
 /****f* pfsense-utils/display_top_tabs
  * NAME
- *   display_top_tabs - display tabs with rounded edges
+ *	 display_top_tabs - display tabs with rounded edges
  * INPUTS
- *   $text	  - array of tabs
+ *	 $text	  - array of tabs
  * RESULT
- *   null
+ *	 null
  ******/
 function display_top_tabs(& $tab_array, $no_drop_down = false, $type = 'pills') {
 	global $config;
@@ -956,10 +959,10 @@ function display_top_tabs(& $tab_array, $no_drop_down = false, $type = 'pills') 
 	global $tab_array_space;
 	global $tab_array_char_limit;
 
-	/*  does the user have access to this tab?
-	 *  master user has access to everything.
-	 *  if the user does not have access, simply
-	 *  unset the tab item.
+	/*	does the user have access to this tab?
+	 *	master user has access to everything.
+	 *	if the user does not have access, simply
+	 *	unset the tab item.
 	 */
 
 	/* empty string code */
@@ -980,7 +983,7 @@ function display_top_tabs(& $tab_array, $no_drop_down = false, $type = 'pills') 
 			unset ($tab_array[$tab_id]);
 	}
 
-	$tab_active_bg   = "#EEEEEE";
+	$tab_active_bg	 = "#EEEEEE";
 	$tab_inactive_bg = "#777777";
 	$nifty_tabs_corners = "#FFF";
 	$font_color = "white";
