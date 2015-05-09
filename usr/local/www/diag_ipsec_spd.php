@@ -69,8 +69,7 @@ $tab_array[2] = array(gettext("SAD"), false, "diag_ipsec_sad.php");
 $tab_array[3] = array(gettext("SPD"), true, "diag_ipsec_spd.php");
 $tab_array[4] = array(gettext("Logs"), false, "diag_logs.php?logfile=ipsec");
 display_top_tabs($tab_array);
-?>
-<?php
+
 if (count($spd)){
 ?>
 	<div class="table-responsive">
@@ -107,7 +106,7 @@ if (count($spd)){
 						<?=htmlspecialchars(strtoupper($sp['proto']))?>
 					</td>
 					<td>
-						<?=htmlspecialchars($sp['src'])?> -> <?=htmlspecialchars($sp['dst'])?>
+						<?=htmlspecialchars($sp['src'])?> -&gt; <?=htmlspecialchars($sp['dst'])?>
 					</td>
 				</tr>
 <?php
