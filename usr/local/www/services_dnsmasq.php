@@ -359,15 +359,11 @@ print $form;
 				endif;
 			endforeach;?>
 		</tbody>
-		<tfoot>
-			<tr>
-				<td colspan="5">
-					<a class="btn btn-xs btn-success" href="services_dnsmasq_edit.php">add</a>
-				</td>
-			</tr>
-		</tfoot>
 	</table>
 </div>
+<nav class="action-buttons">
+	<a class="btn btn-success" href="services_dnsmasq_edit.php"><?=gettext('add')?></a>
+</nav>
 
 <h2><?=gettext("Domain Overrides")?></h2>
 <p>
@@ -398,20 +394,17 @@ print $form;
 					<?=htmlspecialchars($doment['descr'])?>
 				</td>
 				<td>
-					<a class="btn btn-xs btn-primary" href="services_dnsmasq_domainoverride_edit.php?id=<?=$i?>">edit</a>
-					<a class="btn btn-xs btn-danger" href="services_dnsmasq.php?act=del&amp;type=doverride&amp;id=<?=$i?>">delete</a>
+					<a class="btn btn-xs btn-primary" href="services_dnsmasq_domainoverride_edit.php?id=<?=$i?>"><?=gettext('edit')?></a>
+					<a class="btn btn-xs btn-danger" href="services_dnsmasq.php?act=del&amp;type=doverride&amp;id=<?=$i?>"><?=gettext('delete')?></a>
+				</td>
 			</tr>
 			<?php endforeach ?>
 		</tbody>
-		<tfoot>
-			<tr>
-				<td colspan="5">
-					<a class="btn btn-xs btn-success" href="services_dnsmasq_domainoverride_edit.php">add</a>
-				</td>
-			</tr>
-		</tfoot>
 	</table>
 </div>
+<nav class="action-buttons">
+	<a class="btn btn-success" href="services_dnsmasq_domainoverride_edit.php"><?=gettext('add')?></a>
+</nav>
 
 <?php
 include("foot.inc");
