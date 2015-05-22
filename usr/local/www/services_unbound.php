@@ -232,7 +232,7 @@ if ($input_errors)
 	print_input_errors($input_errors);
 
 if ($savemsg)
-	print_info_box($savemsg);
+	print_info_box($savemsg, 'success');
 
 $tab_array = array();
 $tab_array[] = array(gettext("General settings"), true, "services_unbound.php");
@@ -339,14 +339,14 @@ $section->addInput(new Form_TextArea (
 $form->add($section);
 print($form);
 
-print_info_box(sprintf("If the DNS Resolver is enabled, the DHCP".
+print_info_box(sprintf(gettext("If the DNS Resolver is enabled, the DHCP".
 " service (if enabled) will automatically serve the LAN IP".
 " address as a DNS server to DHCP clients so they will use".
 " the DNS Resolver. If Forwarding, is enabled, the DNS Resolver will use the DNS servers".
 " entered in %sSystem: General setup%s".
 " or those obtained via DHCP or PPP on WAN if the &quot;Allow".
 " DNS server list to be overridden by DHCP/PPP on WAN&quot;".
-" is checked.",'<a href="system.php">','</a>'));
+" is checked."),'<a href="system.php">','</a>'));
 ?>
 
 <script>
