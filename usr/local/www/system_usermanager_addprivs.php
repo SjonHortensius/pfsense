@@ -144,7 +144,6 @@ display_top_tabs($tab_array);
 
 require('classes/Form.class.php');
 
-// It was spelled like this in the original HTML page.
 $form = new Form();
 
 $section = new Form_Section('User privileges');
@@ -160,7 +159,7 @@ $section->addInput(new Form_Select(
 if (isset($userid)) {
 	$section->addInput(new Form_Input(
 	'userid',
-	array(),
+	null,
 	'hidden',
 	$userid
 	));
@@ -202,6 +201,9 @@ events.push(function(){
 	}
 
 ?>
+	// Set the number of options to display
+	$('.multiselect').attr("size","20");
+
 	// When the 'sysprivs" selector is clicked, we display a description
 	$('.multiselect').click(function() {
 		$('#pdesc').html(descs[$(this).children('option:selected').index()]);
