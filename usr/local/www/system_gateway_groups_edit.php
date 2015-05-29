@@ -175,8 +175,8 @@ function build_carp_list() {
 	}
 
 	return($list);
-
 }
+
 include("head.inc");
 
 $gateway_protocol = build_gateway_protocol_map($a_gateways);
@@ -228,8 +228,8 @@ foreach($a_gateways as $gwname => $gateway) {
 	}
 
 	$group = new Form_Group($row == 0 ? 'Gateway Priority':null);
-    $group->addClass($gateway['ipprotocol']);
-    
+	$group->addClass($gateway['ipprotocol']);
+
 	$group->add(new Form_Input(
 		'gwname' . $row,
 		'Group Name',
@@ -240,7 +240,7 @@ foreach($a_gateways as $gwname => $gateway) {
 	$group->add(new Form_Select(
 		$gwname,
 		'Tier',
-		!isset($pconfig['filterdescriptions']) ? '0':$pconfig['filterdescriptions'],
+		isset($pconfig['filterdescriptions']) ? $pconfig['filterdescriptions']:'0',
 		array(
 			'0' => 'Never',
 			'1' => 'Tier 1',
@@ -249,7 +249,7 @@ foreach($a_gateways as $gwname => $gateway) {
 			'4' => 'Tier 4',
 			'5' => 'Tier 5'
 		)
-	))->setHelp($row == $numrows ? 'Tier':null);
+	))->setHelp($row == $numrows ? 'Tier':null)->addClass('row')->addClass($gateway['ipprotocol']);
 
 	$group->add(new Form_Select(
 		$gwname . '_vip',
@@ -268,7 +268,7 @@ foreach($a_gateways as $gwname => $gateway) {
 	$section->add($group);
 
 	$row++;
-}
+} // e-o-forwach
 
 $section->addInput(new Form_StaticText(
 	'Link Priority',
@@ -285,7 +285,7 @@ $section->addInput(new Form_StaticText(
 $section->addInput(new Form_Select(
 	'trigger',
 	'Trigger Level',
-	!isset($pconfig['filterdescriptions']) ? '0':$pconfig['filterdescriptions'],
+	$pconfig['trigger'],
 	array(
 		'0' => 'Member down',
 		'1' => 'Packet Loss',
@@ -295,9 +295,10 @@ $section->addInput(new Form_Select(
 ))->setHelp('When to trigger exclusion of a member');
 
 $section->addInput(new Form_Input(
-	'nentries',
+	'descr',
 	'Description',
-	'text'
+	'text',
+	$pconfig['descr']
 ))->setHelp('You may enter a description here for your reference (not parsed).');
 
 if (isset($id) && $a_gateway_groups[$id]){
@@ -319,191 +320,36 @@ $form->addGlobal(new Form_Button(
 
 print($form);
 ?>
+
 <script type="text/javascript">
 //<![CDATA[
 events.push(function(){
-	jQuery(function ($) {
-		var gateway_protocol = <?= json_encode($gateway_protocol) ?>;
-		var gateways		 = <?= json_encode($gateway_array) ?>;
-		var protocols		= <?= json_encode($protocol_array) ?>;
-		if (protocols.length <= 1) { return; }
+	// Hides all elements of the specified class. This will usually be a section or group
+	function hideClass(s_class, hide) {
+		if(hide)
+			$('.' + s_class).hide();
+		else
+			$('.' + s_class).show();
+	}
 
-		var update_gateway_visibilities = function () {
-			var which_protocol_to_show = undefined;
-			$.each(gateways, function (i, gateway) {
-				var $select = $("#" + gateway);
-				var value = $select.val();
-				var protocol = gateway_protocol[gateway];
-				if (value !== '0' /* i.e., an option is selected */) {
-					if (which_protocol_to_show === undefined) {
-						which_protocol_to_show = protocol;
-					}
-					else if (which_protocol_to_show !== protocol) {
-						which_protocol_to_show = 'ALL OF THEM'; // this shouldn't happen
-					}
-				}
-			});
-
-			if (which_protocol_to_show !== undefined && which_protocol_to_show !== 'ALL OF THEM') {
-				$.each(gateways, function (i, gateway) {
-					var protocol = gateway_protocol[gateway];
-					var $row = $("tr.gateway_row#" + gateway + "_row");
-					if (protocol === which_protocol_to_show) {
-						if ($row.is(":hidden")) {
-							$row.fadeIn('slow');
-						}
-					} else {
-						if (!$row.is(":hidden")) {
-							$row.fadeOut('slow');
-						}
-					}
-				});
-			} else {
-				$("tr.gateway_row").each(function () {
-					if ($(this).is(":hidden")) {
-						$(this).fadeIn('slow');
-					}
-				});
-			}
-		};
-
-		$("select.gateway_tier_selector").change(update_gateway_visibilities);
-		update_gateway_visibilities();
+	// On changine a Tier selector on any row, find which protocol it uses (class)
+	// And disable the opposite
+	$('.row').on('change', function() {
+		// If user selects 'Never', unhide all rows
+		if($(this).find(":selected").index() == 0) {
+			hideClass('inet', false);
+			hideClass('inet6', false);
+		}
+		else { // Otherwise hide the rows that are ont of 'this' protocol
+			if($(this).hasClass('inet6'))
+				hideClass('inet', true);
+			else
+				hideClass('inet6', true);
+		}
 	});
 });
 //]]>
 </script>
 
-
-			<form action="system_gateway_groups_edit.php" method="post" name="iform" id="iform">
-			  <table width="100%" border="0" cellpadding="6" cellspacing="0" summary="system groups edit">
-		<tr>
-			<td colspan="2" valign="top" class="listtopic"><?=gettext("Edit gateway group entry"); ?></td>
-		</tr>
-				<tr>
-				  <td width="22%" valign="top" class="vncellreq"><?=gettext("Group Name"); ?></td>
-				  <td width="78%" class="vtable">
-					<input name="name" type="text" class="formfld unknown" id="name" size="20" value="<?=htmlspecialchars($pconfig['name'])?>" />
-					<br /><span class="vexpl"><?=gettext("Group Name"); ?></span></td>
-				</tr>
-		<tr>
-				  <td width="22%" valign="top" class="vncellreq"><?=gettext("Gateway Priority"); ?></td>
-				  <td width="78%" class="vtable">
-			<table border="0" cellpadding="6" cellspacing="0" summary="gateway priority">
-			<tr>
-				<td class="listhdrr">Gateway</td>
-				<td class="listhdrr">Tier</td>
-				<td class="listhdrr">Virtual IP</td>
-				<td class="listhdrr">Description</td>
-			</tr>
-		<?php
-			$carplist = get_configured_carp_interface_list($interface);
-			foreach($a_gateways as $gwname => $gateway) {
-				if(!empty($pconfig['item'])) {
-					$af = explode("|", $pconfig['item'][0]);
-					$family = $a_gateways[$af[0]]['ipprotocol'];
-
-					if($gateway['ipprotocol'] != $family)
-						continue;
-				}
-				$interface = $gateway['friendlyiface'];
-				$selected = array();
-				foreach((array)$pconfig['item'] as $item) {
-					$itemsplit = explode("|", $item);
-					if($itemsplit[0] == $gwname) {
-						$selected[$itemsplit[1]] = "selected=\"selected\"";
-						break;
-					} else {
-						$selected[0] = "selected=\"selected\"";
-					}
-				}
-
-				print_r($gateway);
-				print('<br />');
-
-				$tr_id = $gwname . "_row";
-				echo "<tr class='gateway_row' id='{$tr_id}'>\n";
-				echo "<td class='listlr'>";
-				echo "<strong>{$gateway['name']} </strong>";
-				echo "</td><td class='listr'>";
-				echo "<select name='{$gwname}' class='gateway_tier_selector formfldselect' id='{$gwname}'>\n";
-				echo "<option value='0' $selected[0] >" . gettext("Never") . "</option>\n";
-				echo "<option value='1' $selected[1] >" . gettext("Tier 1") . "</option>\n";
-				echo "<option value='2' $selected[2] >" . gettext("Tier 2") . "</option>\n";
-				echo "<option value='3' $selected[3] >" . gettext("Tier 3") . "</option>\n";
-				echo "<option value='4' $selected[4] >" . gettext("Tier 4") . "</option>\n";
-				echo "<option value='5' $selected[5] >" . gettext("Tier 5") . "</option>\n";
-				echo "</select>\n";
-				echo "</td>";
-
-				$selected = array();
-				foreach((array)$pconfig['item'] as $item) {
-					$itemsplit = explode("|", $item);
-					if($itemsplit[0] == $gwname) {
-						$selected[$itemsplit[2]] = "selected=\"selected\"";
-						break;
-					} else {
-						$selected['address'] = "selected=\"selected\"";
-					}
-				}
-				echo "<td class='listr'>";
-				echo "<select name='{$gwname}_vip' class='gateway_vip_selector formfldselect' id='{$gwname}_vip'>\n";
-				echo "<option value='address' {$selected['address']} >" . gettext("Interface Address") . "</option>\n";
-				foreach($carplist as $vip => $address) {
-					echo "<!-- $vip - $address - $interface -->\n";
-					if(($gateway['ipprotocol'] == "inet") && (!is_ipaddrv4($address)))
-						continue;
-					if(($gateway['ipprotocol'] == "inet6") && (!is_ipaddrv6($address)))
-						continue;
-					echo "<option value='{$vip}' $selected[$vip] >$vip - $address</option>\n";
-				}
-				echo "</select></td>";
-				echo "<td class='listr'><strong>{$gateway['descr']}&nbsp;</strong>";
-				echo "</td></tr>";
-			}
-		?>
-			</table>
-			<br /><span class="vexpl">
-			<strong><?=gettext("Link Priority"); ?></strong><br />
-			<?=gettext("The priority selected here defines in what order failover and balancing of links will be done. " .
-			"Multiple links of the same priority will balance connections until all links in the priority will be exhausted. " .
-			"If all links in a priority level are exhausted we will use the next available link(s) in the next priority level.") ?>
-			<br />
-			<strong><?=gettext("Virtual IP"); ?></strong><br />
-			<?=gettext("The virtual IP field selects what (virtual) IP should be used when this group applies to a local Dynamic DNS, IPsec or OpenVPN endpoint") ?>
-			</span><br />
-		   </td>
-				</tr>
-				<tr>
-				  <td width="22%" valign="top" class="vncellreq"><?=gettext("Trigger Level"); ?></td>
-				  <td width="78%" class="vtable">
-			<select name='trigger' class='formfldselect trigger_level_selector' id='trigger'>
-			<?php
-				foreach ($categories as $category => $categoryd) {
-						echo "<option value=\"$category\"";
-						if ($category == $pconfig['trigger']) echo " selected=\"selected\"";
-					echo ">" . htmlspecialchars($categoryd) . "</option>\n";
-				}
-			?>
-			</select>
-					<br /><span class="vexpl"><?=gettext("When to trigger exclusion of a member"); ?></span></td>
-				</tr>
-		<tr>
-				  <td width="22%" valign="top" class="vncell"><?=gettext("Description"); ?></td>
-				  <td width="78%" class="vtable">
-					<input name="descr" type="text" class="formfld unknown" id="descr" size="40" value="<?=htmlspecialchars($pconfig['descr'])?>" />
-					<br /><span class="vexpl"><?=gettext("You may enter a description here for your reference (not parsed)."); ?></span></td>
-				</tr>
-				<tr>
-				  <td width="22%" valign="top">&nbsp;</td>
-				  <td width="78%">
-					<input name="Submit" type="submit" class="formbtn" value="<?=gettext("Save")?>" />
-					<input type="button" class="formbtn" value="<?=gettext("Cancel")?>" onclick="window.location.href='<?=$referer?>'" />
-					<?php if (isset($id) && $a_gateway_groups[$id]): ?>
-					<input name="id" type="hidden" value="<?=htmlspecialchars($id)?>" />
-					<?php endif; ?>
-				  </td>
-				</tr>
-			  </table>
-</form>
-<?php include("foot.inc");
+<?php
+include("foot.inc");
