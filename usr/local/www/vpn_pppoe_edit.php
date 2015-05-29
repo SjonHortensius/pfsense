@@ -585,6 +585,10 @@ events.push(function(){
 	// When the RADIUS checkbox is clicked . .
 	$('#radiusenable').click(function () {
 		hide_radius(!$('#radiusenable').prop('checked'));
+		if(!$('#radiusenable').prop('checked'))
+			hide_radius2(true);
+		else
+			hide_radius2(!$('#radiussecenable').prop('checked'));
 	});
 
 	// When the 'Use backup RADIUS' checkbox is clicked . .
