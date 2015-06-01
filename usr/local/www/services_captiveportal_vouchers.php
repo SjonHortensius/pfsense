@@ -439,13 +439,11 @@ endforeach;
 		</div>
 	</div>
 </div>
+
+<nav class="action-buttons">
+	<a href=\"services_captiveportal_vouchers_edit.php?zone={$cpzone}\" class="btn btn-success">Add Voucher</a>
+</nav>
 <?php
-if ($pconfig['enable']) : ?>
-	<nav class="action-buttons">
-		<a href=\"services_captiveportal_vouchers_edit.php?zone={$cpzone}\" class="btn btn-success">Add Voucher</a>
-	</nav>
-<?php
-endif;
 
 require('classes/Form.class.php');
 
@@ -464,17 +462,11 @@ $section->addInput(new Form_Checkbox(
 	'Enable',
 	'Enable the creation, generation and activation of rolls with vouchers',
 	$pconfig['enable']
-	));
-
-$form->add($section);
-
-$section = new Form_Section('Create, generate and activate Rolls with Vouchers');
-$section->addClass('rolledit');
+	))->toggles('.form-group:not(:first-child)');
 
 $section->addInput(new Form_TextArea(
 	'publickey',
-	'Sample Text',
-//		'Voucher Public Key',
+	'Voucher Public Key',
 	$pconfig['publickey']
 ))->setHelp('Paste an RSA public key (64 Bit or smaller) in PEM format here. This key is used to decrypt vouchers.' . "<a href='#' onclick='generatenewkey();'>" . 'Generate new key' . "</a>");
 
@@ -537,11 +529,6 @@ $section->addInput(new Form_Input(
 	$pconfig['msgexpired']
 ))->setHelp('Error message displayed for expired vouchers on captive portal error page ($PORTAL_MESSAGE$).');
 
-$form->add($section);
-
-$section = new Form_Section('Voucher database synchronization');
-$section->addClass('rolledit');
-
 $section->addInput(new Form_IpAddress(
 	'vouchersyncdbip',
 	'Synchronize Voucher Database IP',
@@ -586,43 +573,8 @@ $section->addInput(new Form_Input(
 
 $form->add($section);
 print($form);
-?>
-<div class="rolledit">
-<?php
-	print_info_box(gettext('Changing any Voucher parameter (apart from managing the list of Rolls) on this page will render existing vouchers useless if they were generated with different settings. ' .
-						   'Specifying the Voucher Database Synchronization options will not record any other value from the other options. They will be retrieved/synced from the master.'));
-?>
-</div>
 
-<script>
-//<![CDATA[
-events.push(function(){
+print_info_box(gettext('Changing any Voucher parameter (apart from managing the list of Rolls) on this page will render existing vouchers useless if they were generated with different settings. ' .
+						'Specifying the Voucher Database Synchronization options will not record any other value from the other options. They will be retrieved/synced from the master.'));
 
-	// Hides all elements of the specified class. This will usually be a section or group
-	function hideClass(s_class, hide) {
-		if(hide)
-			$('.' + s_class).hide();
-		else
-			$('.' + s_class).show();
-	}
-
-	function setShowHide (show) {
-		hideClass('rolledit', !show);
-
-		if(show)
-			$('td:nth-child(5),th:nth-child(5)').show();
-		else
-			$('td:nth-child(5),th:nth-child(5)').hide();
-	}
-
-	// Show/hide on checkbox change
-	$('#enable').click(function() {
-		setShowHide($('#enable').is(":checked"));
-	})
-
-	// Set initial state
-	setShowHide($('#enable').is(":checked"));
-});
-//]]>
-</script>
-<?php include("foot.inc");
+include("foot.inc");
