@@ -136,6 +136,7 @@ if ($_POST) {
 $pgtitle = array(gettext("Interfaces"),gettext("GIF"),gettext("Edit"));
 $shortcut_section = "interfaces";
 include("head.inc");
+<<<<<<< HEAD
 
 ?>
 
@@ -236,3 +237,89 @@ include("head.inc");
 <?php include("fend.inc"); ?>
 </body>
 </html>
+=======
+require('classes/Form.class.php');
+
+$form = new Form();
+$form->addGlobal(new Form_Button(
+	'cancel',
+	'Cancel',
+	$referer
+));
+
+$section = new Form_Section('GIF Configuration');
+
+$section->addInput(new Form_Select(
+	'if',
+	'Parent Interface',
+	$pconfig['if'],
+	build_parent_list()
+))->setHelp('This interface serves as the local address to be used for the GIF tunnel.');
+
+$section->addInput(new Form_IpAddress(
+	'remote-addr',
+	'GIF Remote Address',
+	$pconfig['remote-addr']
+))->setHelp('Peer address where encapsulated gif packets will be sent.');
+
+$section->addInput(new Form_IpAddress(
+	'tunnel-local-addr',
+	'GIF tunnel local address',
+	$pconfig['tunnel-local-addr']
+))->setHelp('Local gif tunnel endpoint.');
+
+$section->addInput(new Form_IpAddress(
+	'tunnel-remote-addr',
+	'GIF tunnel remote address',
+	$pconfig['tunnel-remote-addr']
+))->setHelp('Remote GIF address endpoint.');
+
+$section->addInput(new Form_Select(
+	'tunnel-remote-net',
+	'GIF tunnel remote subnet',
+	$pconfig['tunnel-remote-net'],
+	array_combine(range(128, 1, -1), range(128, 1, -1))
+))->setHelp('The subnet is used for determining the network that is tunnelled');
+
+$section->addInput(new Form_Checkbox(
+	'link0',
+	'Route Caching',
+	'Specify if route caching can be enabled. (Be careful with these settings on dynamic networks.)',
+	$pconfig['link0']
+));
+
+$section->addInput(new Form_Checkbox(
+	'link1',
+	'ECN friendly behavior',
+	'ECN friendly behavior violates RFC2893. This should be used in mutual agreement with the peer. ',
+	$pconfig['link1']
+));
+
+$section->addInput(new Form_Input(
+	'descr',
+	'Description',
+	'text',
+	$pconfig['descr']
+))->setHelp('You may enter a description here for your reference (not parsed).');
+
+$section->addInput(new Form_Input(
+	'gifif',
+	null,
+	'hidden',
+	$pconfig['gifif']
+));
+
+if (isset($id) && $a_gifs[$id]) {
+	$section->addInput(new Form_Input(
+		'id',
+		null,
+		'hidden',
+		$id
+	));
+}
+
+$form->add($section);
+print($form);
+
+include("foot.inc");
+>>>>>>> 7f8f88086abc39a12ddcd4364e0a0b23937fafb6

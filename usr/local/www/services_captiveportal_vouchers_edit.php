@@ -165,6 +165,7 @@ if ($_POST) {
 }
 
 include("head.inc");
+<<<<<<< HEAD
 ?>
 <body link="#0000CC" vlink="#0000CC" alink="#0000CC">
 <?php include("fbegin.inc"); ?>
@@ -219,3 +220,67 @@ include("head.inc");
 <?php include("fend.inc"); ?>
 </body>
 </html>
+=======
+
+if ($input_errors)
+	print_input_errors($input_errors);
+
+if ($savemsg)
+	print_info_box($savemsg, 'success');
+
+require('classes/Form.class.php');
+
+$form = new Form();
+
+$section = new Form_Section('Voucher rolls');
+
+$section->addInput(new Form_Input(
+	'number',
+	'Roll #',
+	'text',
+	$pconfig['number']
+))->setHelp('Enter the Roll# (0..%d) found on top of the generated/printed vouchers', [$maxnumber]);
+
+$section->addInput(new Form_Input(
+	'minutes',
+	'Minutes per ticket',
+	'text',
+	$pconfig['minutes']
+))->setHelp('Defines the time in minutes that a user is allowed access. The clock starts ticking the first time a voucher is used for authentication.');
+
+$section->addInput(new Form_Input(
+	'count',
+	'Count',
+	'text',
+	$pconfig['count']
+))->setHelp('Enter the number of vouchers (1..%d) found on top of the generated/printed vouchers. WARNING: Changing this number for an existing Roll will mark all vouchers as unused again', [$maxcount]);
+
+$section->addInput(new Form_Input(
+	'descr',
+	'Comment',
+	'text',
+	$pconfig['descr']
+))->setHelp('Can be used to further identify this roll. Ignored by the system.');
+
+$section->addInput(new Form_Input(
+	'zone',
+	null,
+	'hidden',
+	$cpzone
+));
+
+if (isset($id) && $a_roll[$id]) {
+	$section->addInput(new Form_Input(
+		'id',
+		null,
+		'hidden',
+		$pconfig['id']
+	));
+}
+
+
+$form->add($section);
+print($form);
+
+include("foot.inc");
+>>>>>>> 7f8f88086abc39a12ddcd4364e0a0b23937fafb6

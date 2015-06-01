@@ -130,6 +130,98 @@ if ($_POST) {
 $pgtitle = array(gettext("Interfaces"),gettext("GRE"),gettext("Edit"));
 $shortcut_section = "interfaces";
 include("head.inc");
+<<<<<<< HEAD
+=======
+require('classes/Form.class.php');
+
+$form = new Form();
+$form->addGlobal(new Form_Button(
+	'cancel',
+	'Cancel',
+	$referer
+));
+
+$section = new Form_Section('GRE Configuration');
+
+$section->addInput(new Form_Select(
+	'if',
+	'Parent Interface',
+	$pconfig['if'],
+	build_parent_list()
+))->setHelp('This interface serves as the local address to be used for the GRE tunnel.');
+
+$section->addInput(new Form_IpAddress(
+	'remote-addr',
+	'GRE Remote Address',
+	$pconfig['remote-addr']
+))->setHelp('Peer address where encapsulated GRE packets will be sent.');
+
+$section->addInput(new Form_IpAddress(
+	'tunnel-local-addr',
+	'GRE tunnel local address',
+	$pconfig['tunnel-local-addr']
+))->setHelp('Local GRE tunnel endpoint.');
+
+$section->addInput(new Form_IpAddress(
+	'tunnel-remote-addr',
+	'GRE tunnel remote address',
+	$pconfig['tunnel-remote-addr']
+))->setHelp('Remote GRE address endpoint.');
+
+$section->addInput(new Form_Select(
+	'tunnel-remote-net',
+	'GRE tunnel remote subnet',
+	$pconfig['tunnel-remote-net'],
+	array_combine(range(128, 1, -1), range(128, 1, -1))
+))->setHelp('The subnet is used for determining the network that is tunnelled');
+
+$section->addInput(new Form_Checkbox(
+	'link0',
+	'Route Caching',
+	'Specify if route caching can be enabled. (Be careful with these settings on dynamic networks.)',
+	$pconfig['link0']
+));
+
+$section->addInput(new Form_Checkbox(
+	'link1',
+	'ECN friendly behavior',
+	'ECN friendly behavior violates RFC2893. This should be used in mutual agreement with the peer. ',
+	$pconfig['link1']
+));
+
+$section->addInput(new Form_Checkbox(
+	'link2',
+	'WCCP Version',
+	'Check this box for WCCP encapsulation version 2, or leave unchecked for version 1.',
+	$pconfig['link2']
+));
+
+$section->addInput(new Form_Input(
+	'descr',
+	'Description',
+	'text',
+	$pconfig['descr']
+))->setHelp('You may enter a description here for your reference (not parsed).');
+
+$section->addInput(new Form_Input(
+	'greif',
+	null,
+	'hidden',
+	$pconfig['greif']
+));
+
+if (isset($id) && $a_gres[$id]) {
+	$section->addInput(new Form_Input(
+		'id',
+		null,
+		'hidden',
+		$id
+	));
+}
+
+$form->add($section);
+print($form);
+>>>>>>> 7f8f88086abc39a12ddcd4364e0a0b23937fafb6
 
 ?>
 
