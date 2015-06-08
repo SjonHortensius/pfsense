@@ -29,7 +29,7 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 /*
-	pfSense_MODULE:	captiveportal
+	pfSense_MODULE: captiveportal
 */
 
 ##|+PRIV
@@ -49,8 +49,10 @@ global $cpzone;
 global $cpzoneid;
 
 $cpzone = $_GET['zone'];
+
 if (isset($_POST['zone']))
 	$cpzone = $_POST['zone'];
+
 
 if (empty($cpzone) || empty($config['captiveportal'][$cpzone])) {
 	header("Location: services_captiveportal_zones.php");
@@ -59,13 +61,16 @@ if (empty($cpzone) || empty($config['captiveportal'][$cpzone])) {
 
 if (!is_array($config['captiveportal']))
 	$config['captiveportal'] = array();
+
 $a_cp =& $config['captiveportal'];
 
 $pgtitle = array(gettext("Services"),gettext("Captive portal"), $a_cp[$cpzone]['zone']);
 $shortcut_section = "captiveportal";
 
-if ($_POST) {
+$actsmbl = array('pass' => '<font color="green" size="4">&#x2714;</font>&nbsp;Pass',
+				 'block' => '<font color="red" size="4">&#x2718;</font>&nbsp;Block');
 
+if ($_POST) {
 	$pconfig = $_POST;
 
 	if ($_POST['apply']) {
@@ -90,10 +95,12 @@ if ($_POST) {
 			echo gettext("No entry exists yet!") ."\n";
 			exit;
 		}
+
 		if (empty($_POST['zone'])) {
 			echo gettext("Please set the zone on which the operation should be allowed");
 			exit;
 		}
+
 		if (!is_array($a_cp[$cpzone]['passthrumac']))
 			$a_cp[$cpzone]['passthrumac'] = array();
 		$a_passthrumacs =& $a_cp[$cpzone]['passthrumac'];
@@ -105,6 +112,7 @@ if ($_POST) {
 			else
 				echo gettext("No entry exists for this username:") . " " . $_POST['username'] . "\n";
 		}
+
 		if ($_POST['delmac']) {
 			$found = false;
 			foreach ($a_passthrumacs as $idx => $macent) {
@@ -132,6 +140,7 @@ if ($_POST) {
 
 if ($_GET['act'] == "del") {
 	$a_passthrumacs =& $a_cp[$cpzone]['passthrumac'];
+
 	if ($a_passthrumacs[$_GET['id']]) {
 		$cpzoneid = $a_cp[$cpzone]['zoneid'];
 		$rules = captiveportal_passthrumac_delete_entry($a_passthrumacs[$_GET['id']]);
@@ -148,8 +157,21 @@ if ($_GET['act'] == "del") {
 
 include("head.inc");
 
-?>
+if ($savemsg)
+	print_info_box($savemsg, 'success');
 
+if (is_subsystem_dirty('passthrumac'))
+	print_info_box_np(gettext("The captive portal MAC address configuration has been changed.<br />You must apply the changes in order for them to take effect."));
+
+$tab_array = array();
+$tab_array[] = array(gettext("Captive portal(s)"), false, "services_captiveportal.php?zone={$cpzone}");
+$tab_array[] = array(gettext("MAC"), true, "services_captiveportal_mac.php?zone={$cpzone}");
+$tab_array[] = array(gettext("Allowed IP addresses"), false, "services_captiveportal_ip.php?zone={$cpzone}");
+$tab_array[] = array(gettext("Allowed Hostnames"), false, "services_captiveportal_hostname.php?zone={$cpzone}");
+$tab_array[] = array(gettext("Vouchers"), false, "services_captiveportal_vouchers.php?zone={$cpzone}");
+$tab_array[] = array(gettext("File Manager"), false, "services_captiveportal_filemanager.php?zone={$cpzone}");
+display_top_tabs($tab_array, true);
+?>
 <div class="table-responsive">
 	<table class="table table-hover table-striped table-condensed">
 		<thead>
