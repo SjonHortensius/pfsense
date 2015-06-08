@@ -144,6 +144,7 @@ include("head.inc");
 <table width="100%" border="0" cellpadding="0" cellspacing="0" summary="captiveportal file manager">
   <tr><td class="tabnavtbl">
 <?php
+<<<<<<< HEAD
 	$tab_array = array();
 	$tab_array[] = array(gettext("Captive portal(s)"), false, "services_captiveportal.php?zone={$cpzone}");
 	$tab_array[] = array(gettext("MAC"), false, "services_captiveportal_mac.php?zone={$cpzone}");
@@ -212,10 +213,19 @@ include("head.inc");
 	<span class="vexpl"><span class="red"><strong>
 	<?=gettext("Note:"); ?><br />
 	</strong></span>
+=======
+// The notes displayed on the page are large, the page content comparitively small. A "Note" button
+// is provided so that you only see the notes if you ask for them
+?>
+<div class="help-block panel panel-default">
+	<div class="panel-heading">Notes</div>
+	<div class="panel-body">
+>>>>>>> 85616372a68a665ff86e77691dcc3d413905112f
 	<?=gettext("Any files that you upload here with the filename prefix of captiveportal- will " .
 	"be made available in the root directory of the captive portal HTTP(S) server. " .
 	"You may reference them directly from your portal page HTML code using relative paths. " .
 	"Example: you've uploaded an image with the name 'captiveportal-test.jpg' using the " .
+<<<<<<< HEAD
 	"file manager. Then you can include it in your portal page like this:"); ?><br /><br />
 	<tt>&lt;img src=&quot;captiveportal-test.jpg&quot; width=... height=...&gt;</tt>
 	<br /><br />
@@ -232,3 +242,41 @@ include("head.inc");
 <?php include("fend.inc"); ?>
 </body>
 </html>
+=======
+	"file manager. Then you can include it in your portal page like this:")?><br /><br />
+	<pre>&lt;img src=&quot;captiveportal-test.jpg&quot; width=... height=...&gt;</pre><br /><br />
+	<?=gettext("In addition, you can also upload .php files for execution.	You can pass the filename " .
+	"to your custom page from the initial page by using text similar to:")?><br /><br />
+	<pre>&lt;a href="/captiveportal-aup.php?zone=$PORTAL_ZONE$&amp;redirurl=$PORTAL_REDIRURL$"&gt;<?=gettext("Acceptable usage policy"); ?>&lt;/a&gt;</pre><br /><br />
+	<?=sprintf(gettext("The total size limit for all files is %s."), format_bytes($g['captiveportal_element_sizelimit']))?>
+	</div>
+</div>
+
+<script>
+//<![CDATA[
+events.push(function(){
+
+	var hidenotes = true;
+
+	// Hides all elements of the specified class.
+	function hideClass(s_class, hide) {
+		if(hide)
+			$('.' + s_class).hide();
+		else
+			$('.' + s_class).show();
+	}
+
+	hideClass('help-block', hidenotes);
+
+	$(function () {
+		$('#btnnotes').on('click', function () {
+			hidenotes = !hidenotes;
+			hideClass('notes', hidenotes);
+		});
+	});
+});
+</script>
+<?php
+
+include("foot.inc");
+>>>>>>> 85616372a68a665ff86e77691dcc3d413905112f
