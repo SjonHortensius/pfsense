@@ -32,7 +32,7 @@
 */
 /*
 	pfSense_BUILDER_BINARIES:	/sbin/ipfw
-	pfSense_MODULE:	captiveportal
+	pfSense_MODULE: captiveportal
 */
 
 ##|+PRIV
@@ -41,6 +41,13 @@
 ##|*DESCR=Allow access to the 'Services: Captive portal: Allowed Hostnames' page.
 ##|*MATCH=services_captiveportal_hostname.php*
 ##|-PRIV
+
+$directionicons = array('to' => '&#x2192;', 'from' => '&#x2190;', 'both' => '&#x21c4;');
+
+$notestr =
+	gettext('Adding new hostnames will allow a DNS hostname access to/from the captive portal without being taken to the portal page.' .
+	'This can be used for a web server serving images for the portal page, or a DNS server on another network, for example. ' .
+	'By specifying <em>from</em> addresses, it may be used to always allow pass-through access from a client behind the captive portal.');
 
 require("guiconfig.inc");
 require("functions.inc");
@@ -53,12 +60,13 @@ if (isset($_POST['zone']))
 	$cpzone = $_POST['zone'];
 
 if (empty($cpzone) || empty($config['captiveportal'][$cpzone])) {
-        header("Location: services_captiveportal_zones.php");
-        exit;
+	header("Location: services_captiveportal_zones.php");
+	exit;
 }
 
 if (!is_array($config['captiveportal']))
 	$config['captiveportal'] = array();
+
 $a_cp =& $config['captiveportal'];
 
 if (isset($cpzone) && !empty($cpzone) && isset($a_cp[$cpzone]['zoneid']))
@@ -71,7 +79,7 @@ if ($_GET['act'] == "del" && !empty($cpzone) && isset($cpzoneid)) {
 	$a_allowedhostnames =& $a_cp[$cpzone]['allowedhostname'];
 	if ($a_allowedhostnames[$_GET['id']]) {
 		$ipent = $a_allowedhostnames[$_GET['id']];
-		
+
 		if (isset($a_cp[$cpzone]['enable'])) {
 			if(is_ipaddr($ipent['hostname']))
 				$ip = $ipent['hostname'];
@@ -85,11 +93,12 @@ if ($_GET['act'] == "del" && !empty($cpzone) && isset($cpzoneid)) {
 					pfSense_pipe_action("pipe delete {$ipfw['dnpipe']}");
 					pfSense_pipe_action("pipe delete " . ($ipfw['dnpipe']+1));
 				}
+
 				pfSense_ipfw_Tableaction($cpzoneid, IP_FW_TABLE_XDEL, 3, $ip, $sn);
 				pfSense_ipfw_Tableaction($cpzoneid, IP_FW_TABLE_XDEL, 4, $ip, $sn);
 			}
 		}
-			
+
 		unset($a_allowedhostnames[$_GET['id']]);
 		write_config();
 		captiveportal_allowedhostname_configure();
@@ -98,10 +107,20 @@ if ($_GET['act'] == "del" && !empty($cpzone) && isset($cpzoneid)) {
 	}
 }
 
-
 include("head.inc");
-?>
 
+if ($savemsg)
+	print_info_box($savemsg);
+
+$tab_array = array();
+$tab_array[] = array(gettext("Captive portal(s)"), false, "services_captiveportal.php?zone={$cpzone}");
+$tab_array[] = array(gettext("MAC"), false, "services_captiveportal_mac.php?zone={$cpzone}");
+$tab_array[] = array(gettext("Allowed IP Addresses"), false, "services_captiveportal_ip.php?zone={$cpzone}");
+$tab_array[] = array(gettext("Allowed Hostnames"), true, "services_captiveportal_hostname.php?zone={$cpzone}");
+$tab_array[] = array(gettext("Vouchers"), false, "services_captiveportal_vouchers.php?zone={$cpzone}");
+$tab_array[] = array(gettext("File Manager"), false, "services_captiveportal_filemanager.php?zone={$cpzone}");
+display_top_tabs($tab_array, true);
+?>
 <div class="table-responsive">
 	<table class="table table-hover table-striped table-condensed">
 		<thead>
