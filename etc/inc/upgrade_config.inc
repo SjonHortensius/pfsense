@@ -743,7 +743,7 @@ function upgrade_042_to_043() {
 	$gateways = array();
 	$i = 0;
 	foreach ($iflist as $ifname => $interface) {
-		if (! interface_has_gateway($ifname)) {
+		if (!interface_has_gateway($ifname)) {
 			continue;
 		}
 		$config['gateways']['gateway_item'][$i] = array();
@@ -1087,7 +1087,7 @@ function upgrade_046_to_047() {
 				$type = $tunnel['local-subnet']['network'];
 			}
 			if ($tunnel['local-subnet']['address']) {
-				list($address,$netbits) = explode("/",$tunnel['local-subnet']['address']);
+				list($address, $netbits) = explode("/", $tunnel['local-subnet']['address']);
 				if (is_null($netbits)) {
 					$type = "address";
 				} else {
@@ -1097,18 +1097,18 @@ function upgrade_046_to_047() {
 
 			switch ($type) {
 				case "address":
-					$ph2ent['localid'] = array('type' => $type,'address' => $address);
+					$ph2ent['localid'] = array('type' => $type, 'address' => $address);
 					break;
 				case "network":
-					$ph2ent['localid'] = array('type' => $type,'address' => $address,'netbits' => $netbits);
+					$ph2ent['localid'] = array('type' => $type, 'address' => $address, 'netbits' => $netbits);
 					break;
 				default:
 					$ph2ent['localid'] = array('type' => $type);
 					break;
 			}
 
-			list($address,$netbits) = explode("/",$tunnel['remote-subnet']);
-			$ph2ent['remoteid'] = array('type' => 'network','address' => $address,'netbits' => $netbits);
+			list($address, $netbits) = explode("/", $tunnel['remote-subnet']);
+			$ph2ent['remoteid'] = array('type' => 'network', 'address' => $address, 'netbits' => $netbits);
 
 			$ph2ent['protocol'] = $tunnel['p2']['protocol'];
 
@@ -1407,7 +1407,7 @@ function upgrade_048_to_049() {
 		$group['member'] = array();
 		foreach ($config['system']['user'] as & $user) {
 			$groupnames = explode(",", $user['groupname']);
-			if (in_array($group['name'],$groupnames)) {
+			if (in_array($group['name'], $groupnames)) {
 				$group['member'][] = $user['uid'];
 			}
 		}
@@ -1429,7 +1429,7 @@ function upgrade_048_to_049() {
 	/* insert new all group */
 	$groups = Array();
 	$groups[] = $all;
-	$groups = array_merge($config['system']['group'],$groups);
+	$groups = array_merge($config['system']['group'], $groups);
 	$config['system']['group'] = $groups;
 }
 
@@ -1682,7 +1682,7 @@ function upgrade_051_to_052() {
 				$tmpstr = "";
 				foreach ($tmpcstmopts as $tmpcstmopt) {
 					$tmpstr = str_replace(" ", "", $tmpcstmopt);
-					if (substr($tmpstr,0 ,6) == "devtun") {
+					if (substr($tmpstr, 0, 6) == "devtun") {
 						$assigned_if = substr($tmpstr, 3);
 						continue;
 					} else if (substr($tmpstr, 0, 5) == "local") {
@@ -1787,7 +1787,7 @@ function upgrade_051_to_052() {
 				$tmpstr = "";
 				foreach ($tmpcstmopts as $tmpcstmopt) {
 					$tmpstr = str_replace(" ", "", $tmpcstmopt);
-					if (substr($tmpstr,0 ,6) == "devtun") {
+					if (substr($tmpstr, 0, 6) == "devtun") {
 						$assigned_if = substr($tmpstr, 3);
 						continue;
 					} else if (substr($tmpstr, 0, 5) == "local") {
@@ -1965,7 +1965,7 @@ function upgrade_053_to_054() {
 		$gateway_group_arr = array();
 		$gateways = return_gateways_array();
 		$group_name_changes = array();
-		if (! is_array($config['gateways']['gateway_item'])) {
+		if (!is_array($config['gateways']['gateway_item'])) {
 			$config['gateways']['gateway_item'] = array();
 		}
 
@@ -2415,7 +2415,7 @@ function upgrade_062_to_063() {
 
 function upgrade_063_to_064() {
 	global $config;
-	$j=0;
+	$j = 0;
 	$ifcfg = &$config['interfaces'];
 
 	if (is_array($config['ppps']['ppp']) && count($config['ppps']['ppp'])) {
@@ -2448,7 +2448,7 @@ function upgrade_063_to_064() {
 			if (isset($ifinfo['ptpid'])) {
 				continue;
 			}
-			$ppp['ptpid'] =  $j;
+			$ppp['ptpid'] = $j;
 			$ppp['type'] = $ifinfo['ipaddr'];
 			$ppp['if'] = $ifinfo['ipaddr'].$j;
 			$ppp['ports'] = $ifinfo['if'];
@@ -2547,9 +2547,11 @@ function upgrade_066_to_067() {
 	global $config;
 	if (isset($config['system']['ca'])) {
 		$config['ca'] = $config['system']['ca'];
+		unset($config['system']['ca']);
 	}
 	if (isset($config['system']['cert'])) {
 		$config['cert'] = $config['system']['cert'];
+		unset($config['system']['cert']);
 	}
 }
 
@@ -3053,9 +3055,6 @@ function upgrade_085_to_086() {
 function upgrade_086_to_087() {
 	global $config, $dummynet_pipe_list;
 
-	if (!is_array($config['filter']) || !is_array($config['filter']['rule'])) {
-		return;
-	}
 	if (!is_array($config['dnshaper']) || !is_array($config['dnshaper']['queue'])) {
 		return;
 	}
@@ -3075,6 +3074,10 @@ function upgrade_086_to_087() {
 	}
 
 	unset($dnqueue_number, $dnpipe_number, $qidx, $idx, $dnpipe, $dnqueue);
+
+	if (!is_array($config['filter']) || !is_array($config['filter']['rule'])) {
+		return;
+	}
 
 	require_once("shaper.inc");
 	read_dummynet_config();
@@ -3438,7 +3441,7 @@ function upgrade_104_to_105() {
 	if (is_array($config['captiveportal'])) {
 		$zoneid = 2;
 		foreach ($config['captiveportal'] as $cpzone => $cpcfg) {
-			if (empty($cpfg['zoneid'])) {
+			if (empty($cpcfg['zoneid'])) {
 				$config['captiveportal'][$cpzone]['zoneid'] = $zoneid;
 				$zoneid += 2;
 			} else if ($cpcfg['zoneid'] > 4000) {
@@ -3737,9 +3740,6 @@ function upgrade_115_to_116() {
 function upgrade_116_to_117() {
 	global $config;
 
-	if (is_array($config['ipsec']))
-		$config['ipsec']['shuntlaninterfaces'] = true;
-
 	if (!isset($config['ipsec']['client']) ||
 	    !isset($config['ipsec']['client']['dns_split']) ||
 	    empty($config['ipsec']['client']['dns_split'])) {
@@ -3752,6 +3752,57 @@ function upgrade_116_to_117() {
 }
 
 function upgrade_117_to_118() {
+	global $config;
+
+	// Unset any old CA and Cert in the system section that might still be there from when upgrade_066_to_067 did not unset them.
+	if (isset($config['system']['ca'])) {
+		unset($config['system']['ca']);
+	}
+	if (isset($config['system']['cert'])) {
+		unset($config['system']['cert']);
+	}
+
+	if (!isset($config['ipsec']['phase1'])) {
+		return;
+	}
+
+	$a_phase1 =& $config['ipsec']['phase1'];
+
+	foreach ($a_phase1 as &$ph1_entry) {
+		// update asn1dn strings from racoon's format to strongswan's 
+		if (isset($ph1_entry['myid_type']) && $ph1_entry['myid_type'] == 'asn1dn') {
+			$ph1_entry['myid_data'] =
+			    preg_replace('/\/\s*emailAddress\s*=\s*/', ', E=', $ph1_entry['myid_data']);
+		}
+		if (isset($ph1_entry['peerid_type']) && $ph1_entry['peerid_type'] == 'asn1dn') {
+			$ph1_entry['peerid_data'] =
+			    preg_replace('/\/\s*emailAddress\s*=\s*/', ', E=', $ph1_entry['peerid_data']);
+		}
+		// iketype 'auto' was removed and is really v2, update accordingly
+		if ($ph1_entry['iketype'] == "auto") {
+			$ph1_entry['iketype'] = "ikev2";
+		}
+	}
+}
+
+function upgrade_118_to_119() {
+	global $config;
+
+        if (!isset($config['ipsec']['phase1'])) {
+                return;
+        }
+
+	// change peerid_type to 'any' for EAP types to retain previous behavior of omitting rightid
+	$a_phase1 =& $config['ipsec']['phase1'];
+
+	foreach ($a_phase1 as &$ph1_entry) {
+		if (strstr($ph1_entry['authentication_method'], 'eap')) {
+			$ph1_entry['peerid_type'] = "any";	
+		}
+	}
+}
+
+function upgrade_119_to_120() {
 	global $config;
 
 	if (!isset($config['installedpackages']['miniupnpd']['config'][0])) {
@@ -3769,5 +3820,5 @@ function upgrade_117_to_118() {
 		unset($miniupnpd["permuser{$i}"]);
 	}
 }
-?>
 
+?>

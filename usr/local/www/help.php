@@ -238,7 +238,7 @@ $helppages = array(
 	'services_unbound_host_edit.php' => 'https://doc.pfsense.org/index.php/Unbound_DNS_Resolver',
 	'diag_gmirror.php' => 'https://doc.pfsense.org/index.php/Create_a_Software_RAID1_%28gmirror%29',
 
-	/* From here down are packages. Not checking these as strictly, 
+	/* From here down are packages. Not checking these as strictly,
 	any information is better than nothing. */
 	'olsrd.xml' => 'https://doc.pfsense.org/index.php/OLSR_Daemon',
 	'routed.xml' => 'https://doc.pfsense.org/index.php/Routing_Information_Protocol_(RIP)', # RIP
@@ -316,6 +316,7 @@ $helppages = array(
 	'open-vm-tools.xml' => 'https://doc.pfsense.org/index.php/Open_VM_Tools_package',
 	'arping.xml' => 'https://doc.pfsense.org/index.php/Arping_package',
 	'unbound.xml' => 'https://doc.pfsense.org/index.php/Unbound_package',
+	'nut.xml' => 'https://doc.pfsense.org/index.php/Nut_package',
 
 );
 
@@ -367,7 +368,6 @@ if (array_key_exists($pagename, $helppages)) {
 
 if (empty($helppage)) {
 	$helppage = 'https://doc.pfsense.org/index.php/No_Help_Found';
-
 }
 
 /* Redirect to help page. */

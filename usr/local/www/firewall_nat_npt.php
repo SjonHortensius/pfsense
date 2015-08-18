@@ -70,16 +70,15 @@ if ($_POST) {
 if ($_GET['act'] == "del") {
 	if ($a_npt[$_GET['id']]) {
 		unset($a_npt[$_GET['id']]);
-
-		if (write_config())
+		if (write_config()) {
 			mark_subsystem_dirty('natconf');
-
+		}
 		header("Location: firewall_nat_npt.php");
 		exit;
 	}
 }
 
-$pgtitle = array(gettext("Firewall"),gettext("NAT"),gettext("NPt"));
+$pgtitle = array(gettext("Firewall"), gettext("NAT"), gettext("NPt"));
 include("head.inc");
 
 if ($savemsg)
@@ -97,6 +96,7 @@ display_top_tabs($tab_array);
 ?>
 
 <div class="panel-body table responsive">
+	<form method="post">
 	<table class="table table-striped table-hover table-condensed">
 		<thead>
 			<tr>
@@ -107,7 +107,7 @@ display_top_tabs($tab_array);
 				<th><!-- Buttons --></th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="user-entries">
 <?php
 
 $i = 0;
@@ -115,6 +115,7 @@ foreach ($a_npt as $natent):
 ?>
 			<tr<?=isset($natent['disabled'])? ' class="disabled"' : ''?>>
 				<td>
+					<input type="hidden" name="rule[]" value="<?=$i?>" />
 <?php
 	if (!$natent['interface'])
 		print(htmlspecialchars(convert_friendly_interface_to_friendly_descr("wan")));
@@ -152,7 +153,21 @@ endforeach;
 
 <nav class="action-buttons">
 	<a href="firewall_nat_npt_edit.php" class="btn btn-sm btn-success"><?=gettext("Add rule")?></a>
+	<input type="submit" id="order-store" class="btn btn-primary btn-sm" value="store changes" disabled="disabled" />
 </nav>
+
+</form>
+<script>
+events.push(function() {
+	// Make rules draggable/sortable
+	$('table tbody.user-entries').sortable({
+		cursor: 'grabbing',
+		update: function(event, ui) {
+			$('#order-store').removeAttr('disabled');
+		}
+	});
+});
+</script>
 
 <?php
 

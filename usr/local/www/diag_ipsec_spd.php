@@ -51,7 +51,7 @@ define(LEFTARROW,  '&#x25c0;');
 require("guiconfig.inc");
 require("ipsec.inc");
 
-$pgtitle = array(gettext("Status"),gettext("IPsec"),gettext("SPD"));
+$pgtitle = array(gettext("Status"), gettext("IPsec"), gettext("SPD"));
 $shortcut_section = "ipsec";
 include("head.inc");
 
