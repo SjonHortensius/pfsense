@@ -1,31 +1,59 @@
 <?php
+/* $Id$ */
 /*
 	carp_status.php
-	Copyright (C) 2004 Scott Ullrich
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2004, 2005 Scott Ullrich
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+  *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 
 ##|+PRIV
 ##|*IDENT=page-status-carp
@@ -52,38 +80,39 @@ unset($interface_ip_arr_cache);
 
 $status = get_carp_status();
 $status = intval($status);
-if($_POST['carp_maintenancemode'] <> "") {
+if ($_POST['carp_maintenancemode'] <> "") {
 	interfaces_carp_set_maintenancemode(!isset($config["virtualip_carp_maintenancemode"]));
 }
-if($_POST['disablecarp'] <> "") {
-	if($status > 0) {
+if ($_POST['disablecarp'] <> "") {
+	if ($status > 0) {
 		set_single_sysctl('net.inet.carp.allow', '0');
-		if(is_array($config['virtualip']['vip'])) {
+		if (is_array($config['virtualip']['vip'])) {
 			$viparr = &$config['virtualip']['vip'];
 			$found_dhcpdv6 = false;
 			foreach ($viparr as $vip) {
 				$carp_iface = "{$vip['interface']}_vip{$vip['vhid']}";
 				switch ($vip['mode']) {
-				case "carp":
-					interface_vip_bring_down($vip);
-					interface_ipalias_cleanup($carp_iface);
+					case "carp":
+						interface_vip_bring_down($vip);
+						interface_ipalias_cleanup($carp_iface);
 
-					/*
-					 * Reconfigure radvd when necessary
-					 * XXX: Is it the best way to do it?
-					 */
-					if (isset($config['dhcpdv6']) && is_array($config['dhcpdv6'])) {
-						foreach ($config['dhcpdv6'] as $dhcpv6if => $dhcpv6ifconf) {
-							if ($dhcpv6ifconf['rainterface'] != $carp_iface)
-								continue;
+						/*
+						 * Reconfigure radvd when necessary
+						 * XXX: Is it the best way to do it?
+						 */
+						if (isset($config['dhcpdv6']) && is_array($config['dhcpdv6'])) {
+							foreach ($config['dhcpdv6'] as $dhcpv6if => $dhcpv6ifconf) {
+								if ($dhcpv6ifconf['rainterface'] != $carp_iface) {
+									continue;
+								}
 
-							services_radvd_configure();
-							break;
+								services_radvd_configure();
+								break;
+							}
 						}
-					}
 
-					sleep(1);
-					break;
+						sleep(1);
+						break;
 				}
 			}
 		}
@@ -91,18 +120,19 @@ if($_POST['disablecarp'] <> "") {
 		$status = 0;
 	} else {
 		$savemsg = gettext("CARP has been enabled.");
-		if(is_array($config['virtualip']['vip'])) {
+		if (is_array($config['virtualip']['vip'])) {
 			$viparr = &$config['virtualip']['vip'];
 			foreach ($viparr as $vip) {
 				switch ($vip['mode']) {
-				case "carp":
-					interface_carp_configure($vip);
-					sleep(1);
-					break;
-				case 'ipalias':
-					if (strpos($vip['interface'], '_vip'))
-						interface_ipalias_configure($vip);
-					break;
+					case "carp":
+						interface_carp_configure($vip);
+						sleep(1);
+						break;
+					case 'ipalias':
+						if (strpos($vip['interface'], '_vip')) {
+							interface_ipalias_configure($vip);
+						}
+						break;
 				}
 			}
 		}
@@ -120,7 +150,7 @@ if (!empty($_POST['resetdemotion'])) {
 	$carp_detected_problems = get_single_sysctl("net.inet.carp.demotion");
 }
 
-$pgtitle = array(gettext("Status"),gettext("CARP"));
+$pgtitle = array(gettext("Status"), gettext("CARP"));
 $shortcut_section = "carp";
 include("head.inc");
 ?>

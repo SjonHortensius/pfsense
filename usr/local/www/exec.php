@@ -1,34 +1,61 @@
 <?php
 /* $Id$ */
 /*
-	Exec+ v1.02-000 - Copyright 2001-2003, All rights reserved
-	Created by technologEase (http://www.technologEase.com).
-
-	(modified for m0n0wall by Manuel Kasper <mk@neon1.net>)
-
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
+	exec.php
 */
+/* ====================================================================
+ *	Exec+ v1.02-000 - Copyright 2001-2003, All rights reserved
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved.
+ *	Created by technologEase (http://www.technologEase.com)
+ *	(modified for m0n0wall by Manuel Kasper <mk@neon1.net>)\
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+  *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_MODULE: shell
 */
@@ -67,20 +94,23 @@ if (($_POST['submit'] == "Download") && file_exists($_POST['dlPath'])) {
 	unset($_POST['txtCommand']);
 }
 
-if($_POST)
+if ($_POST) {
 	conf_mount_rw();
+}
 
 // Function: is Blank
 // Returns true or false depending on blankness of argument.
 
-function isBlank( $arg ) { return preg_match( "/^\s*$/", $arg ); }
-
+function isBlank($arg) {
+	return preg_match("/^\s*$/", $arg);
+}
 
 // Function: Puts
 // Put string, Ruby-style.
 
-function puts( $arg ) { echo "$arg\n"; }
-
+function puts($arg) {
+	echo "$arg\n";
+}
 
 // "Constants".
 
@@ -93,24 +123,28 @@ $arrDT = localtime();
 $intYear = $arrDT[5] + 1900;
 
 $closehead = false;
-$pgtitle = array(gettext("Diagnostics"),gettext("Execute command"));
+$pgtitle = array(gettext("Diagnostics"), gettext("Execute command"));
 include("head.inc");
 ?>
 <script>
 	// Create recall buffer array (of encoded strings).
 <?php
 
-if (isBlank( $_POST['txtRecallBuffer'] )) {
-	puts( "	  var arrRecallBuffer = new Array;" );
+if (isBlank($_POST['txtRecallBuffer'])) {
+	puts("   var arrRecallBuffer = new Array;");
 } else {
-	puts( "	  var arrRecallBuffer = new Array(" );
-	$arrBuffer = explode( "&", $_POST['txtRecallBuffer'] );
-	for ($i=0; $i < (count( $arrBuffer ) - 1); $i++)
-		puts( "	  '" . htmlspecialchars($arrBuffer[$i], ENT_QUOTES | ENT_HTML401) . "'," );
-	puts( "	  '" . htmlspecialchars($arrBuffer[count( $arrBuffer ) - 1], ENT_QUOTES | ENT_HTML401) . "'" );
-	puts( "	  );" );
+	puts("   var arrRecallBuffer = new Array(");
+	$arrBuffer = explode("&", $_POST['txtRecallBuffer']);
+	for ($i = 0; $i < (count($arrBuffer) - 1); $i++) {
+		puts("      '" . htmlspecialchars($arrBuffer[$i], ENT_QUOTES | ENT_HTML401) . "',");
+	}
+	puts("      '" . htmlspecialchars($arrBuffer[count($arrBuffer) - 1], ENT_QUOTES | ENT_HTML401) . "'");
+	puts("   );");
 }
 ?>
+	// Set pointer to end of recall buffer.
+	var intRecallPtr = arrRecallBuffer.length-1;
+
 	// Set pointer to end of recall buffer.
 	var intRecallPtr = arrRecallBuffer.length-1;
 
@@ -129,15 +163,17 @@ if (isBlank( $_POST['txtRecallBuffer'] )) {
 	// Function: frmExecPlus onSubmit (event handler)
 	// Builds the recall buffer from the command string on submit.
 	function frmExecPlus_onSubmit( form ) {
+
 		if (!isBlank(form.txtCommand.value)) {
 			// If this command is repeat of last command, then do not store command.
 			if (form.txtCommand.value.encode() == arrRecallBuffer[arrRecallBuffer.length-1]) { return true }
 
 			// Stuff encoded command string into the recall buffer.
-			if (isBlank(form.txtRecallBuffer.value))
+			if (isBlank(form.txtRecallBuffer.value)) {
 				form.txtRecallBuffer.value = form.txtCommand.value.encode();
-			else
+			} else {
 				form.txtRecallBuffer.value += '&' + form.txtCommand.value.encode();
+			}
 		}
 
 		return true;
@@ -149,7 +185,7 @@ if (isBlank( $_POST['txtRecallBuffer'] )) {
 
 		// If nothing in recall buffer, then error.
 		if (!arrRecallBuffer.length) {
-			alert( '<?=gettext("Nothing to recall"); ?>!' );
+			alert('<?=gettext("Nothing to recall"); ?>!');
 			form.txtCommand.focus();
 			return;
 		}

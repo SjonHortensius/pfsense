@@ -32,13 +32,16 @@ $(function() {
 		selects.trigger('change');
 	})();
 
+
 	// Add +/- buttons to certain Groups; to allow adding multiple entries
+	// This time making the buttons col-2 wide so they can fit on the same line as the
+	// rest of the group (providing the total width of the group is col-8 or less)
 	(function()
 	{
-		var groups = $('div.form-group.user-duplication');
-		var controlsContainer = $('<div class="col-sm-10 col-sm-offset-2 controls"></div>');
-		var plus = $('<a class="btn btn-xs btn-success">Duplicate</a>');
-		var minus = $('<a class="btn btn-xs btn-danger">Delete</a>');
+		var groups = $('div.form-group.user-duplication-horiz');
+		var controlsContainer = $('<div class="col-sm-2"></div>');
+		var plus = $('<a class="btn btn-sm btn-success">Add</a>');
+		var minus = $('<a class="btn btn-sm btn-warning">Delete</a>');
 
 		minus.on('click', function(){
 			$(this).parents('div.form-group').remove();
@@ -48,7 +51,36 @@ $(function() {
 			var group = $(this).parents('div.form-group');
 
 			var clone = group.clone(true);
-			clone.find('*').removeAttr('value');
+			clone.find('*').val(''); //removeAttr('value');
+			clone.appendTo(group.parent());
+		});
+
+		groups.each(function(idx, group){
+			var controlsClone = controlsContainer.clone(true).appendTo(group);
+			minus.clone(true).appendTo(controlsClone);
+
+			if (group == group.parentNode.lastElementChild)
+				plus.clone(true).appendTo(controlsClone);
+		});
+	})();
+
+	// Add +/- buttons to certain Groups; to allow adding multiple entries
+	(function()
+	{
+		var groups = $('div.form-group.user-duplication');
+		var controlsContainer = $('<div class="col-sm-10 col-sm-offset-2 controls"></div>');
+		var plus = $('<a class="btn btn-xs btn-success">Add</a>');
+		var minus = $('<a class="btn btn-xs btn-warning">Delete</a>');
+
+		minus.on('click', function(){
+			$(this).parents('div.form-group').remove();
+		});
+
+		plus.on('click', function(){
+			var group = $(this).parents('div.form-group');
+
+			var clone = group.clone(true);
+			clone.find('*').val(''); //removeAttr('value');
 			clone.appendTo(group.parent());
 		});
 
@@ -98,25 +130,27 @@ $(function() {
 			e.preventDefault();
 	});
 
-	// Add toggle-all when there are multiple checkboxes
+	// Add toggle-all when there are multiple checkboxes and none of them are radio buttons
 	$('.control-label + .checkbox.multi').each(function() {
 		var a = $('<a class="btn btn-xs btn-default">toggle all</a>');
-
-		a.on('click', function() {
-			var wrap = $(this).parents('.form-group').find('.checkbox.multi'),
-				all = wrap.find('input[type=checkbox]'),
-				checked = wrap.find('input[type=checkbox]:checked');
-
-			all.prop('checked', (all.length != checked.length));
-		});
-
-		a.appendTo($(this));
+		
+		if(($(this).html().indexOf("type=\"radio\"") == -1)) {
+			a.on('click', function() {
+				var wrap = $(this).parents('.form-group').find('.checkbox.multi'),
+					all = wrap.find('input[type=checkbox]'),
+					checked = wrap.find('input[type=checkbox]:checked');
+	
+				all.prop('checked', (all.length != checked.length));
+			});
+	
+			a.appendTo($(this));
+		}
 	});
 
 	// Hide advanced inputs by default
 	if ($('.advanced').length > 0)
 	{
-		var advButt = $('<a class="btn btn-default">toggle advanced options</a>');
+		var advButt = $('<a id="toggle-advanced" class="btn btn-default">toggle advanced options</a>');
 		advButt.on('click', function() {
 			$('.advanced').parents('.form-group').collapse('toggle');
 		});

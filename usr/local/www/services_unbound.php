@@ -111,8 +111,9 @@ if ($_POST) {
 		system_dhcpleases_configure();
 	} else {
 		if (isset($_POST['enable']) && isset($config['dnsmasq']['enable'])) {
-			if ($_POST['port'] == $config['dnsmasq']['port'])
+			if ($_POST['port'] == $config['dnsmasq']['port']) {
 				$input_errors[] = "The DNS Forwarder is enabled using this port. Choose a non-conflicting port, or disable the DNS Forwarder.";
+			}
 		}
 
 		if (empty($_POST['active_interface'])) {
@@ -206,9 +207,9 @@ function build_if_list() {
 	$interface_addresses = get_possible_listen_ips(true);
 	$iflist = array('options' => array(), 'selected' => array());
 
-	$iflist['options'][""]	= "All";
+	$iflist['options']['all']	= "All";
 	if (empty($pconfig['interface']) || empty($pconfig['interface'][0]))
-		array_push($iflist['selected'], "");
+		array_push($iflist['selected'], "all");
 
 	foreach ($interface_addresses as $laddr => $ldescr) {
 		$iflist['options'][$laddr] = htmlspecialchars($ldescr);
@@ -223,7 +224,7 @@ function build_if_list() {
 }
 
 $closehead = false;
-$pgtitle = array(gettext("Services"),gettext("DNS Resolver"));
+$pgtitle = array(gettext("Services"), gettext("DNS Resolver"));
 $shortcut_section = "resolver";
 
 include_once("head.inc");

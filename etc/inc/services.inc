@@ -5,7 +5,7 @@
 
 	originally part of m0n0wall (http://m0n0.ch/wall)
 	Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
-	Copyright (C) 2010	Ermal Luci
+	Copyright (C) 2010	Ermal Luçi
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,12 @@
 	pfSense_MODULE:	utils
 */
 
-define('DYNDNS_PROVIDER_VALUES', 'citynetwork cloudflare custom custom-v6 dhs dnsexit dnsimple dnsomatic dyndns dyndns-custom dyndns-static dyns easydns eurodns freedns glesys gratisdns he-net he-net-v6 he-net-tunnelbroker loopia namecheap noip noip-free ods opendns ovh-dynhost route53 selfhost zoneedit');
-define('DYNDNS_PROVIDER_DESCRIPTIONS', 'City Network,CloudFlare,Custom,Custom (v6),DHS,DNSexit,DNSimple,DNS-O-Matic,DynDNS (dynamic),DynDNS (custom),DynDNS (static),DyNS,easyDNS,Euro Dns,freeDNS,GleSYS,GratisDNS,HE.net,HE.net (v6),HE.net Tunnelbroker,Loopia,Namecheap,No-IP,No-IP (free),ODS.org,OpenDNS,OVH DynHOST,Route 53,SelfHost,ZoneEdit');
+define('DYNDNS_PROVIDER_VALUES', 'citynetwork cloudflare custom custom-v6 dhs dnsexit dnsimple dnsmadeeasy dnsomatic dyndns dyndns-custom dyndns-static dyns easydns eurodns freedns glesys googledomains gratisdns he-net he-net-v6 he-net-tunnelbroker loopia namecheap noip noip-free ods opendns ovh-dynhost route53 selfhost zoneedit');
+define('DYNDNS_PROVIDER_DESCRIPTIONS', 'City Network,CloudFlare,Custom,Custom (v6),DHS,DNSexit,DNSimple,DNS Made Easy,DNS-O-Matic,DynDNS (dynamic),DynDNS (custom),DynDNS (static),DyNS,easyDNS,Euro Dns,freeDNS,GleSYS,Google Domains,GratisDNS,HE.net,HE.net (v6),HE.net Tunnelbroker,Loopia,Namecheap,No-IP,No-IP (free),ODS.org,OpenDNS,OVH DynHOST,Route 53,SelfHost,ZoneEdit');
 
 /* implement ipv6 route advertising daemon */
 function services_radvd_configure($blacklist = array()) {
 	global $config, $g;
-
-	if ($g['platform'] == 'jail') {
-		return;
-	}
 
 	if (isset($config['system']['developerspew'])) {
 		$mt = microtime();
@@ -159,6 +155,10 @@ function services_radvd_configure($blacklist = array()) {
 				$radvdconf .= "\tAdvManagedFlag on;\n";
 				$radvdconf .= "\tAdvOtherConfigFlag on;\n";
 				break;
+			case "stateless_dhcp":
+				$radvdconf .= "\tAdvManagedFlag off;\n";
+				$radvdconf .= "\tAdvOtherConfigFlag on;\n";
+				break;
 		}
 		$radvdconf .= "\tprefix {$subnetv6}/{$ifcfgsnv6} {\n";
 		if ($carpif == true) {
@@ -177,6 +177,7 @@ function services_radvd_configure($blacklist = array()) {
 				$radvdconf .= "\t\tAdvAutonomous off;\n";
 				$radvdconf .= "\t\tAdvRouterAddr on;\n";
 				break;
+			case "stateless_dhcp":
 			case "assist":
 				$radvdconf .= "\t\tAdvOnLink on;\n";
 				$radvdconf .= "\t\tAdvAutonomous on;\n";
@@ -190,6 +191,41 @@ function services_radvd_configure($blacklist = array()) {
 		}
 		$radvdconf .= "\t};\n";
 
+		if (is_array($dhcpv6ifconf['subnets']['item'])) {
+			foreach ($dhcpv6ifconf['subnets']['item'] as $subnet) {
+				if (is_subnetv6($subnet)) {
+					$radvdconf .= "\tprefix {$subnet} {\n";
+					if ($carpif == true) {
+						$radvdconf .= "\t\tDeprecatePrefix off;\n";
+					} else {
+						$radvdconf .= "\t\tDeprecatePrefix on;\n";
+					}
+					switch ($dhcpv6ifconf['ramode']) {
+						case "managed":
+							$radvdconf .= "\t\tAdvOnLink on;\n";
+							$radvdconf .= "\t\tAdvAutonomous off;\n";
+							$radvdconf .= "\t\tAdvRouterAddr on;\n";
+							break;
+						case "router":
+							$radvdconf .= "\t\tAdvOnLink off;\n";
+							$radvdconf .= "\t\tAdvAutonomous off;\n";
+							$radvdconf .= "\t\tAdvRouterAddr on;\n";
+							break;
+						case "assist":
+							$radvdconf .= "\t\tAdvOnLink on;\n";
+							$radvdconf .= "\t\tAdvAutonomous on;\n";
+							$radvdconf .= "\t\tAdvRouterAddr on;\n";
+							break;
+						case "unmanaged":
+							$radvdconf .= "\t\tAdvOnLink on;\n";
+							$radvdconf .= "\t\tAdvAutonomous on;\n";
+							$radvdconf .= "\t\tAdvRouterAddr on;\n";
+							break;
+					}
+					$radvdconf .= "\t};\n";
+				}
+			}
+		}
 		if ($carpif === true) {
 			$radvdconf .= "\troute ::/0 {\n";
 			$radvdconf .= "\t\tRemoveRoute off;\n";
@@ -355,7 +391,7 @@ function services_dhcpd_configure($family = "all", $blacklist = array()) {
 	global $config, $g;
 
 	/* configure DHCPD chroot once */
-	$fd = fopen("{$g['tmp_path']}/dhcpd.sh","w");
+	$fd = fopen("{$g['tmp_path']}/dhcpd.sh", "w");
 	fwrite($fd, "/bin/mkdir -p {$g['dhcpd_chroot_path']}\n");
 	fwrite($fd, "/bin/mkdir -p {$g['dhcpd_chroot_path']}/dev\n");
 	fwrite($fd, "/bin/mkdir -p {$g['dhcpd_chroot_path']}/etc\n");
@@ -370,7 +406,7 @@ function services_dhcpd_configure($family = "all", $blacklist = array()) {
 	fwrite($fd, "/bin/cp -n /usr/local/sbin/dhcpd {$g['dhcpd_chroot_path']}/usr/local/sbin/\n");
 	fwrite($fd, "/bin/chmod a+rx {$g['dhcpd_chroot_path']}/usr/local/sbin/dhcpd\n");
 
-	$status = `/sbin/mount | /usr/bin/grep -v grep  | /usr/bin/grep  "{$g['dhcpd_chroot_path']}/dev"`;
+	$status = `/sbin/mount | /usr/bin/grep -v grep | /usr/bin/grep "{$g['dhcpd_chroot_path']}/dev"`;
 	if (!trim($status)) {
 		fwrite($fd, "/sbin/mount -t devfs devfs {$g['dhcpd_chroot_path']}/dev\n");
 	}
@@ -560,7 +596,7 @@ EOD;
 				$my_port = "519";
 				$peer_port = "520";
 				$type = "primary";
-				$dhcpdconf_pri  = "split 128;\n";
+				$dhcpdconf_pri = "split 128;\n";
 				$dhcpdconf_pri .= "  mclt 600;\n";
 			}
 
@@ -672,15 +708,17 @@ EOPP;
 		}
 		$all_mac_strings[] = $dhcpifconf['mac_allow'];
 		$all_mac_strings[] = $dhcpifconf['mac_deny'];
-		$all_mac_list = array_unique(explode(',', implode(',', $all_mac_strings)));
-		foreach ($all_mac_list as $mac) {
-			if (empty($mac)) {
-				continue;
+		if (!empty($all_mac_strings)) {
+			$all_mac_list = array_unique(explode(',', implode(',', $all_mac_strings)));
+			foreach ($all_mac_list as $mac) {
+				if (empty($mac)) {
+					continue;
+				}
+				$dhcpdconf .= 'class "' . str_replace(':', '', $mac) . '" {' . "\n";
+				// Skip the first octet of the MAC address - for media type, typically Ethernet ("01") and match the rest.
+				$dhcpdconf .= '	match if substring (hardware, 1, ' . (substr_count($mac, ':') + 1) . ') = ' . $mac . ';' . "\n";
+				$dhcpdconf .= '}' . "\n";
 			}
-			$dhcpdconf .= 'class "' . str_replace(':', '', $mac) . '" {' . "\n";
-			// Skip the first octet of the MAC address - for media type, typically Ethernet ("01") and match the rest.
-			$dhcpdconf .= '	match if substring (hardware, 1, ' . (substr_count($mac, ':') + 1) . ') = ' . $mac . ';' . "\n";
-			$dhcpdconf .= '}' . "\n";
 		}
 
 		$dhcpdconf .= "subnet {$subnet} netmask {$subnetmask} {\n";
@@ -1027,8 +1065,7 @@ EOD;
 	return 0;
 }
 
-function dhcpdkey($dhcpifconf)
-{
+function dhcpdkey($dhcpifconf) {
 	$dhcpdconf = "";
 	if ($dhcpifconf['ddnsdomainkeyname'] <> "" && $dhcpifconf['ddnsdomainkey'] <> "") {
 		$dhcpdconf .= "key {$dhcpifconf['ddnsdomainkeyname']} {\n";
@@ -1040,8 +1077,7 @@ function dhcpdkey($dhcpifconf)
 	return $dhcpdconf;
 }
 
-function dhcpdzones($ddns_zones, $dhcpifconf)
-{
+function dhcpdzones($ddns_zones, $dhcpifconf) {
 	$dhcpdconf = "";
 
 	if (is_array($ddns_zones)) {
@@ -1527,9 +1563,7 @@ EOD;
 
 function services_dhcrelay_configure() {
 	global $config, $g;
-	if ($g['platform'] == 'jail') {
-		return;
-	}
+
 	if (isset($config['system']['developerspew'])) {
 		$mt = microtime();
 		echo "services_dhcrelay_configure() being called $mt\n";
@@ -1564,77 +1598,13 @@ function services_dhcrelay_configure() {
 			$dhcrelayifs[] = get_real_interface($dhcrelayif);
 		}
 	}
-
-	/*
-	 * In order for the relay to work, it needs to be active
-	 * on the interface in which the destination server sits.
-	 */
-	$srvips = explode(",", $dhcrelaycfg['server']);
-	foreach ($srvips as $srcidx => $srvip) {
-		unset($destif);
-		foreach ($iflist as $ifname) {
-			$subnet = get_interface_ip($ifname);
-			if (!is_ipaddr($subnet)) {
-				continue;
-			}
-			$subnet .=  "/" . get_interface_subnet($ifname);
-			if (ip_in_subnet($srvip, $subnet)) {
-				$destif = get_real_interface($ifname);
-				break;
-			}
-		}
-		if (!isset($destif)) {
-			foreach (get_staticroutes() as $rtent) {
-				if (ip_in_subnet($srvip, $rtent['network'])) {
-					$a_gateways = return_gateways_array(true);
-					$destif = $a_gateways[$rtent['gateway']]['interface'];
-					break;
-				}
-			}
-		}
-
-		if (!isset($destif)) {
-			/* Create a array from the existing route table */
-			exec("/usr/bin/netstat -rnWf inet", $route_str);
-			array_shift($route_str);
-			array_shift($route_str);
-			array_shift($route_str);
-			array_shift($route_str);
-			$route_arr = array();
-			foreach ($route_str as $routeline) {
-				$items = preg_split("/[ ]+/i", $routeline);
-				if (is_subnetv4($items[0])) {
-					$subnet = $items[0];
-				} elseif (is_ipaddrv4($items[0])) {
-					$subnet = "{$items[0]}/32";
-				} else {
-					// Not a subnet or IP address, skip to the next line.
-					continue;
-				}
-				if (ip_in_subnet($srvip, $subnet)) {
-					$destif = trim($items[6]);
-					break;
-				}
-			}
-		}
-
-		if (!isset($destif)) {
-			if (is_array($config['gateways']['gateway_item'])) {
-				foreach ($config['gateways']['gateway_item'] as $gateway) {
-					if (isset($gateway['defaultgw'])) {
-						$destif = get_real_interface($gateway['interface']);
-						break;
-					}
-				}
-			} else {
-				$destif = get_real_interface("wan");
-			}
-		}
-
-		if (!empty($destif)) {
-			$dhcrelayifs[] = $destif;
-		}
+	
+	$srvips = explode(",", $dhcrelaycfg['server']);	
+	if (!is_array($srvips)) {
+		log_error("No destination IP has been configured!");
+		return;
 	}
+
 	$dhcrelayifs = array_unique($dhcrelayifs);
 
 	/* fire up dhcrelay */
@@ -1643,10 +1613,10 @@ function services_dhcrelay_configure() {
 		return; /* XXX */
 	}
 
-	$cmd = "/usr/local/sbin/dhcrelay -i " .  implode(" -i ", $dhcrelayifs);
+	$cmd = "/usr/local/sbin/dhcrelay -i " . implode(" -i ", $dhcrelayifs);
 
 	if (isset($dhcrelaycfg['agentoption'])) {
-		$cmd .=  " -a -m replace";
+		$cmd .= " -a -m replace";
 	}
 
 	$cmd .= " " . implode(" ", $srvips);
@@ -1658,9 +1628,7 @@ function services_dhcrelay_configure() {
 
 function services_dhcrelay6_configure() {
 	global $config, $g;
-	if ($g['platform'] == 'jail') {
-		return;
-	}
+
 	if (isset($config['system']['developerspew'])) {
 		$mt = microtime();
 		echo "services_dhcrelay6_configure() being called $mt\n";
@@ -1687,8 +1655,9 @@ function services_dhcrelay6_configure() {
 	$dhcifaces = explode(",", $dhcrelaycfg['interface']);
 	foreach ($dhcifaces as $dhcrelayif) {
 		if (!isset($iflist[$dhcrelayif]) ||
-		    link_interface_to_bridge($dhcrelayif))
+		    link_interface_to_bridge($dhcrelayif)) {
 			continue;
+		}
 
 		if (is_ipaddrv6(get_interface_ipv6($dhcrelayif))) {
 			$dhcrelayifs[] = get_real_interface($dhcrelayif);
@@ -1696,70 +1665,10 @@ function services_dhcrelay6_configure() {
 	}
 	$dhcrelayifs = array_unique($dhcrelayifs);
 
-	/*
-	 * In order for the relay to work, it needs to be active
-	 * on the interface in which the destination server sits.
-	 */
 	$srvips = explode(",", $dhcrelaycfg['server']);
-	$srvifaces = array();
-	foreach ($srvips as $srcidx => $srvip) {
-		unset($destif);
-		foreach ($iflist as $ifname) {
-			$subnet = get_interface_ipv6($ifname);
-			if (!is_ipaddrv6($subnet)) {
-				continue;
-			}
-			$subnet .=  "/" . get_interface_subnetv6($ifname);
-			if (ip_in_subnet($srvip, $subnet)) {
-				$destif = get_real_interface($ifname);
-				break;
-			}
-		}
-		if (!isset($destif)) {
-			if (is_array($config['staticroutes']['route'])) {
-				foreach ($config['staticroutes']['route'] as $rtent) {
-					if (ip_in_subnet($srvip, $rtent['network'])) {
-						$a_gateways = return_gateways_array(true);
-						$destif = $a_gateways[$rtent['gateway']]['interface'];
-						break;
-					}
-				}
-			}
-		}
-
-		if (!isset($destif)) {
-			/* Create a array from the existing route table */
-			exec("/usr/bin/netstat -rnWf inet6", $route_str);
-			array_shift($route_str);
-			array_shift($route_str);
-			array_shift($route_str);
-			array_shift($route_str);
-			$route_arr = array();
-			foreach ($route_str as $routeline) {
-				$items = preg_split("/[ ]+/i", $routeline);
-				if (ip_in_subnet($srvip, $items[0])) {
-					$destif = trim($items[6]);
-					break;
-				}
-			}
-		}
-
-		if (!isset($destif)) {
-			if (is_array($config['gateways']['gateway_item'])) {
-				foreach ($config['gateways']['gateway_item'] as $gateway) {
-					if (isset($gateway['defaultgw'])) {
-						$destif = get_real_interface($gateway['interface']);
-						break;
-					}
-				}
-			} else {
-				$destif = get_real_interface("wan");
-			}
-		}
-
-		if (!empty($destif)) {
-			$srvifaces[] = "{$srvip}%{$destif}";
-		}
+	if (!is_array($srvips)) {
+		log_error("No destination IP has been configured!");
+		return;
 	}
 
 	/* fire up dhcrelay */
@@ -1802,8 +1711,8 @@ function services_dyndns_configure_client($conf) {
 		$dnsPort = NULL,
 		$dnsUpdateURL = "{$conf['updateurl']}",
 		$forceUpdate = $conf['force'],
-		$dnsZoneID=$conf['zoneid'],
-		$dnsTTL=$conf['ttl'],
+		$dnsZoneID = $conf['zoneid'],
+		$dnsTTL = $conf['ttl'],
 		$dnsResultMatch = "{$conf['resultmatch']}",
 		$dnsRequestIf = "{$conf['requestif']}",
 		$dnsID = "{$conf['id']}",
@@ -1858,7 +1767,7 @@ function dyndnsCheckIP($int) {
 		$ip_ch = curl_init($hosttocheck);
 		curl_setopt($ip_ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ip_ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($ip_ch, CURLOPT_INTERFACE, $ip_address);
+		curl_setopt($ip_ch, CURLOPT_INTERFACE, 'host!' . $ip_address);
 		curl_setopt($ip_ch, CURLOPT_CONNECTTIMEOUT, '30');
 		curl_setopt($ip_ch, CURLOPT_TIMEOUT, 120);
 		curl_setopt($ip_ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -1902,7 +1811,7 @@ function services_dnsmasq_configure() {
 		}
 
 		/* generate hosts file */
-		if (system_hosts_generate()!=0) {
+		if (system_hosts_generate() != 0) {
 			$return = 1;
 		}
 
@@ -2058,7 +1967,7 @@ function services_dnsmasq_configure() {
 	}
 
 	if (!platform_booting()) {
-		if (services_dhcpd_configure()!=0) {
+		if (services_dhcpd_configure() != 0) {
 			$return = 1;
 		}
 	}
@@ -2088,7 +1997,7 @@ function services_unbound_configure() {
 		}
 
 		/* generate hosts file */
-		if (system_hosts_generate()!=0) {
+		if (system_hosts_generate() != 0) {
 			$return = 1;
 		}
 
@@ -2102,7 +2011,7 @@ function services_unbound_configure() {
 	}
 
 	if (!platform_booting()) {
-		if (services_dhcpd_configure()!=0) {
+		if (services_dhcpd_configure() != 0) {
 			$return = 1;
 		}
 	}
@@ -2133,7 +2042,7 @@ function services_snmpd_configure() {
 		/* generate snmpd.conf */
 		$fd = fopen("{$g['varetc_path']}/snmpd.conf", "w");
 		if (!$fd) {
-			printf(gettext("Error: cannot open snmpd.conf in services_snmpd_configure().%s"),"\n");
+			printf(gettext("Error: cannot open snmpd.conf in services_snmpd_configure().%s"), "\n");
 			return 1;
 		}
 
@@ -2167,13 +2076,12 @@ trap := "{$config['snmpd']['trapstring']}"
 EOD;
 		}
 
-		$version = trim(file_get_contents('/etc/version'));
 		$platform = trim(file_get_contents('/etc/platform'));
 		if (($platform == "pfSense") && ($g['product_name'] != "pfSense")) {
 			$platform = $g['product_name'];
 		}
 		$sysDescr = "{$g['product_name']} " . php_uname("n") .
-			" {$version} {$platform} " . php_uname("s") .
+			" {$g['product_version']} {$platform} " . php_uname("s") .
 			" " . php_uname("r") . " " . php_uname("m");
 
 		$snmpdconf .= <<<EOD
@@ -2575,7 +2483,7 @@ function upnp_start() {
 	}
 }
 
-function install_cron_job($command, $active=false, $minute="0", $hour="*", $monthday="*", $month="*", $weekday="*", $who="root") {
+function install_cron_job($command, $active = false, $minute = "0", $hour = "*", $monthday = "*", $month = "*", $weekday = "*", $who = "root") {
 	global $config, $g;
 
 	$is_installed = false;
@@ -2587,7 +2495,7 @@ function install_cron_job($command, $active=false, $minute="0", $hour="*", $mont
 		$config['cron']['item'] = array();
 	}
 
-	$x=0;
+	$x = 0;
 	foreach ($config['cron']['item'] as $item) {
 		if (strstr($item['command'], $command)) {
 			$is_installed = true;

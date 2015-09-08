@@ -30,7 +30,7 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 /*
-	pfSense_MODULE:	routing
+	pfSense_MODULE: routing
 */
 
 ##|+PRIV
@@ -49,6 +49,7 @@ $referer = (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '/load_
 if (!is_array($config['load_balancer']['lbpool'])) {
 	$config['load_balancer']['lbpool'] = array();
 }
+
 $a_pool = &$config['load_balancer']['lbpool'];
 
 if (is_numericint($_GET['id']))
@@ -116,6 +117,7 @@ if ($_POST) {
 			}
 		}
 	}
+
 	if (is_array($_POST['serversdisabled'])) {
 		foreach($pconfig['serversdisabled'] as $svrent) {
 			if (!is_ipaddr($svrent) && !is_subnetv4($svrent)) {
@@ -126,7 +128,9 @@ if ($_POST) {
 			}
 		}
 	}
+
 	$m = array();
+
 	for ($i=0; isset($config['load_balancer']['monitor_type'][$i]); $i++)
 		$m[$config['load_balancer']['monitor_type'][$i]['name']] = $config['load_balancer']['monitor_type'][$i];
 
@@ -137,9 +141,10 @@ if ($_POST) {
 		$poolent = array();
 		if(isset($id) && $a_pool[$id])
 			$poolent = $a_pool[$id];
+
 		if($poolent['name'] != "")
 			$changedesc .= sprintf(gettext(" modified '%s' pool:"), $poolent['name']);
-		
+
 		update_if_changed("name", $poolent['name'], $_POST['name']);
 		update_if_changed("mode", $poolent['mode'], $_POST['mode']);
 		update_if_changed("description", $poolent['descr'], $_POST['descr']);
@@ -158,7 +163,7 @@ if ($_POST) {
 			$a_pool[$id] = $poolent;
 		} else
 			$a_pool[] = $poolent;
-		
+
 		if ($changecount > 0) {
 			/* Mark pool dirty */
 			mark_subsystem_dirty('loadbalancer');
@@ -174,176 +179,268 @@ $pgtitle = array(gettext("Services"), gettext("Load Balancer"),gettext("Pool"),g
 $shortcut_section = "relayd";
 
 include("head.inc");
-
 ?>
 
-<body link="#0000CC" vlink="#0000CC" alink="#0000CC">
-<?php include("fbegin.inc"); ?>
 <script type="text/javascript">
 //<![CDATA[
-function clearcombo(){
-  for (var i=document.iform.serversSelect.options.length-1; i>=0; i--){
-    document.iform.serversSelect.options[i] = null;
-  }
-  document.iform.serversSelect.selectedIndex = -1;
-}
+events.push(function(){
+
+	// Disables the specified input element
+	function disableInput(id, disable) {
+		$('#' + id).prop("disabled", disable);
+	}
+
+	// Select every option in the specified multiselect
+	function AllServers(id, selectAll) {
+	   for (i = 0; i < id.length; i++)	   {
+		   id.eq(i).prop('selected', selectAll);
+	   }
+	}
+
+	// Move all selected options from one multiselect to another
+	function moveOptions(From, To)	{
+		var len = From.length;
+		var option;
+
+		if(len > 1) {
+			for(i=0; i<len; i++) {
+				if(From.eq(i).is(':selected')) {
+					option = From.eq(i).val();
+					To.append(new Option(option, option));
+					From.eq(i).remove();
+				}
+			}
+		}
+	}
+
+	function checkPoolControls() {
+
+		if ($("#mode").val() == "failover") {
+			disableInput('movetoenabled', $('[name="servers[]"] option').length > 0);
+		} else {
+			disableInput('movetoenabled',false);
+		}
+	}
+
+	// Move (copy/delete) all but one of the items in the Enabled (server) list to the Disabled list
+	function enforceFailover() {
+		if ($('#mode').val() != 'failover') {
+			return;
+		}
+
+		var len = $('[name="servers[]"] option').length;
+		var option;
+
+		if(len > 1) {
+			for(i=len-1; i>0; i--) {
+				option = $('[name="servers[]"] option').eq(i).val();
+				$('[name="serversdisabled[]"]').append(new Option(option, option));
+				$('[name="servers[]"] option').eq(i).remove();
+			}
+		}
+	}
+
+	// Make buttons plain buttons, not a submit
+	$("#btnaddtopool").prop('type','button');
+	$("#removeenabled").prop('type','button');
+	$("#removedisabled").prop('type','button');
+	$("#movetodisabled").prop('type','button');
+	$("#movetoenabled").prop('type','button');
+
+	// On click . .
+	$("#btnaddtopool").click(function() {
+		$('[name="servers[]"]').append(new Option($('#ipaddr').val(), $('#ipaddr').val()));
+		enforceFailover();
+		checkPoolControls();
+	});
+
+	$('#mode').on('change', function() {
+		enforceFailover();
+		checkPoolControls();
+	});
+
+	$("#removeenabled").click(function() {
+		$('[name="servers[]"] option:selected').remove();
+	});
+
+	$("#removedisabled").click(function() {
+		$('[name="serversdisabled[]"] option:selected').remove();
+	});
+	
+	$("#movetodisabled").click(function() {
+		moveOptions($('[name="servers[]"] option'), $('[name="serversdisabled[]"]'));
+	});
+
+	$("#movetoenabled").click(function() {
+		moveOptions($('[name="serversdisabled[]"] option'), $('[name="servers[]"]'));
+	});
+
+	// On initial page load
+	checkPoolControls();
+
+	// On submit
+	$('form').submit(function(){
+		AllServers($('[name="servers[]"] option'), true);
+		AllServers($('[name="serversdisabled[]"] option'), true);
+	});
+
+});
 //]]>
 </script>
 
-<script type="text/javascript" src="/javascript/autosuggest.js?rev=1"></script>
-<script type="text/javascript" src="/javascript/suggestions.js"></script>
-
-<?php if ($input_errors) print_input_errors($input_errors); ?>
-
-	<form action="load_balancer_pool_edit.php" method="post" name="iform" id="iform">
-	<table width="100%" border="0" cellpadding="6" cellspacing="0" summary="load balancer pool entry">
-		<tr>
-			<td colspan="2" valign="top" class="listtopic"><?=gettext("Add/edit Load Balancer - Pool entry"); ?></td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top" class="vncellreq"><?=gettext("Name"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<input name="name" type="text" <?if(isset($pconfig['name'])) echo "value=\"" . htmlspecialchars($pconfig['name']) . "\"";?> size="16" maxlength="16" />
-			</td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top" class="vncellreq"><?=gettext("Mode"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<select id="mode" name="mode" onchange="enforceFailover(); checkPoolControls();">
-					<option value="loadbalance" <?if(!isset($pconfig['mode']) || ($pconfig['mode'] == "loadbalance")) echo "selected=\"selected\"";?>><?=gettext("Load Balance");?></option>
-					<option value="failover"  <?if($pconfig['mode'] == "failover") echo "selected=\"selected\"";?>><?=gettext("Manual Failover");?></option>
-				</select>
-			</td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top" class="vncell"><?=gettext("Description"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<input name="descr" type="text" <?if(isset($pconfig['descr'])) echo "value=\"" . htmlspecialchars($pconfig['descr']) . "\"";?> size="64" />
-			</td>
-		</tr>
-
-		<tr align="left">
-			<td width="22%" valign="top" id="monitorport_text" class="vncellreq"><?=gettext("Port"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<input class="formfldalias" id="port" name="port" type="text" <?if(isset($pconfig['port'])) echo "value=\"{$pconfig['port']}\"";?> size="16" maxlength="16" /><br />
-				<div id="monitorport_desc">
-					<?=gettext("This is the port your servers are listening on."); ?><br />
-					<?=gettext("You may also specify a port alias listed in Firewall -&gt; Aliases here."); ?>
-				</div>
-				<script type="text/javascript">
-				//<![CDATA[
-					var addressarray = <?= json_encode(get_alias_list(array("port", "url_ports", "urltable_ports"))) ?>;
-					var oTextbox1 = new AutoSuggestControl(document.getElementById("port"), new StateSuggestions(addressarray));
-				//]]>
-				</script>
-			</td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top" id="retry_text" class="vncell"><?=gettext("Retry"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<input name="retry" type="text" <?if(isset($pconfig['retry'])) echo "value=\"{$pconfig['retry']}\"";?> size="16" maxlength="16" /><br />
-				<div id="retry_desc"><?=gettext("Optionally specify how many times to retry checking a server before declaring it down."); ?></div>
-			</td>
-		</tr>
-		<tr>
-			<td>&nbsp;</td>
-		</tr>
-		<tr>
-			<td colspan="2" valign="top" class="listtopic"><?=gettext("Add item to pool"); ?></td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top" class="vncellreq"><?=gettext("Monitor"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<?php if(count($config['load_balancer']['monitor_type'])): ?>
-				<select id="monitor" name="monitor">
-					<?php
-						foreach ($config['load_balancer']['monitor_type'] as $monitor) {
-							if ($monitor['name'] == $pconfig['monitor']) {
-								$selected=" selected=\"selected\"";
-							} else {
-								$selected = "";
-							}
-							echo "<option value=\"{$monitor['name']}\"{$selected}>{$monitor['name']}</option>";
-						}
-					?>
-				<?php else: ?>
-					<b><?=gettext("NOTE"); ?>:</b> <?=gettext("Please add a monitor IP address on the monitors tab if you wish to use this feature."); ?>
-				<?php endif; ?>
-				</select>
-			</td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top" class="vncellreq"><?=gettext("Server IP Address"); ?></td>
-			<td width="78%" class="vtable" colspan="2">
-				<input name="ipaddr" type="text" size="16" style="float: left;" /> 
-				<input class="formbtn" type="button" name="button1" value="<?=gettext("Add to pool"); ?>" onclick="AddServerToPool(document.iform); enforceFailover(); checkPoolControls();" /><br />
-			</td>
-		</tr>
-		<tr>
-			<td>&nbsp;</td>
-		</tr>
-		<tr>
-			<td colspan="2" valign="top" class="listtopic"><?=gettext("Current Pool Members"); ?></td>
-		</tr>
-		<tr>
-			<td width="22%" valign="top" class="vncellreq"><?=gettext("Members"); ?></td>
-			<td width="78%" class="vtable" colspan="2" valign="top">
-				<table summary="members">
-					<tbody>
-					<tr>
-						<td align="center">
-								<b><?=gettext("Pool Disabled"); ?></b>
-							<br/>
-							<select id="serversDisabledSelect" name="serversdisabled[]" multiple="multiple" size="5">
 <?php
-	if (is_array($pconfig['serversdisabled'])) {
-		foreach($pconfig['serversdisabled'] as $svrent) {
-			if($svrent != '') echo "    <option value=\"{$svrent}\">{$svrent}</option>\n";
-		}
-	}
-?>
-							</select>
-							<input class="formbtn" type="button" name="removeDisabled" value="<?=gettext("Remove"); ?>" onclick="RemoveServerFromPool(document.iform, 'serversdisabled[]');" />
-						</td>
+if ($input_errors)
+	print_input_errors($input_errors);
 
-						<td valign="middle">
-							<input class="formbtn" type="button" id="moveToEnabled" name="moveToEnabled" value=">" onclick="moveOptions(document.iform.serversDisabledSelect, document.iform.serversSelect); checkPoolControls();" /><br />
-							<input class="formbtn" type="button" id="moveToDisabled" name="moveToDisabled" value="<" onclick="moveOptions(document.iform.serversSelect, document.iform.serversDisabledSelect); checkPoolControls();" />
-						</td>
+require('classes/Form.class.php');
 
-						<td align="center">
-								<b><?=gettext("Enabled (default)"); ?></b>
-							<br/>
-							<select id="serversSelect" name="servers[]" multiple="multiple" size="5">
-<?php
-if (is_array($pconfig['servers'])) {
-	foreach($pconfig['servers'] as $svrent) {
-		echo "    <option value=\"{$svrent}\">{$svrent}</option>\n";
-	}
+$form = new Form(new Form_Button(
+	'Submit',
+	gettext("Save")
+));
+
+$section = new Form_Section('Add/edit Load Balancer - Pool entry');
+
+$section->addInput(new Form_Input(
+	'name',
+	'Name',
+	'text',
+	$pconfig['name']
+));
+
+$section->addInput(new Form_Select(
+	'mode',
+	'Mode',
+	$pconfig['mode'],
+	array(
+		'loadbalance' => 'Load Balance',
+		'failover' => 'Manual Failover'
+	)
+));
+
+$section->addInput(new Form_Input(
+	'descr',
+	'Description',
+	'text',
+	$pconfig['descr']
+));
+
+$section->addInput(new Form_Input(
+	'port',
+	'Port',
+	'text',
+	$pconfig['port']
+))->setHelp('This is the port your servers are listening on. You may also specify a port alias listed in Firewall -> Aliases here.');
+
+$section->addInput(new Form_Input(
+	'retry',
+	'Retry',
+	'number',
+	$pconfig['retry'],
+	['min' => '1', 'max' => '65536']
+))->setHelp('Optionally specify how many times to retry checking a server before declaring it down.');
+
+$form->add($section);
+
+$section = new Form_Section('Add item to the pool');
+
+$monitorlist = array();
+
+foreach ($config['load_balancer']['monitor_type'] as $monitor)
+	$monitorlist[$monitor['name']] = $monitor['name'];
+
+if(count($config['load_balancer']['monitor_type'])) {
+	$section->addInput(new Form_Select(
+		'monitor',
+		'Monitor',
+		$pconfig['monitor'],
+		$monitorlist
+	));
+} else {
+	$section->addInput(new Form_StaticText(
+		'Monitor',
+		'Please add a monitor IP address on the monitors tab if you wish to use this feature."'
+	));
 }
-?>
-							</select>
-							<input class="formbtn" type="button" name="removeEnabled" value="<?=gettext("Remove"); ?>" onclick="RemoveServerFromPool(document.iform, 'servers[]');" />
-						</td>
-					</tr>
-					</tbody>
-				</table>
-			</td>
-		</tr>
-		<tr align="left">
-			<td width="22%" valign="top">&nbsp;</td>
-			<td width="78%">
-				<br />
-				<input name="Submit" type="submit" class="formbtn" value="<?=gettext("Save"); ?>" onclick="AllServers('serversSelect', true); AllServers('serversDisabledSelect', true);" /> 
-				<input type="button" class="formbtn" value="<?=gettext("Cancel");?>" onclick="window.location.href='<?=$referer;?>'" />
-				<?php if (isset($id) && $a_pool[$id] && $_GET['act'] != 'dup'): ?>
-				<input name="id" type="hidden" value="<?=htmlspecialchars($id);?>" />
-				<?php endif; ?>
-			</td>
-		</tr>
-	</table>
-	</form>
-<br />
-<?php include("fend.inc"); ?>
-</body>
-</html>
+
+$group = new Form_Group('Server IP Address');
+
+$group->add(new Form_IpAddress(
+	'ipaddr',
+	'IP Address',
+	$pconfig['ipaddr']
+));
+
+$group->add(new Form_Button(
+	'btnaddtopool',
+	'Add to pool'
+))->removeClass('btn-primary')->addClass('btn-default');
+
+$section->add($group);
+
+$form->add($section);
+
+$section = new Form_Section('Current pool members');
+
+$group = new Form_Group('Members');
+
+$group->add(new Form_Select(
+	'serversdisabled',
+	null,
+	$pconfig['serversdisabled'],
+	is_array($pconfig['serversdisabled']) ? array_combine($pconfig['serversdisabled'], $pconfig['serversdisabled']) : array(),
+	true
+))->setHelp('Disabled');
+
+$group->add(new Form_Select(
+	'servers',
+	null,
+	$pconfig['servers'],
+	is_array($pconfig['servers']) ? array_combine($pconfig['servers'], $pconfig['servers']) : array(),
+	true
+))->setHelp('Enabled (Default)');
+
+$section->add($group);
+
+$group = new Form_Group('');
+
+$group->add(new Form_Button(
+	'removedisabled',
+	'Remove'
+))->removeClass('btn-primary')->addClass('btn-default btn-sm');
+
+$group->add(new Form_Button(
+	'removeenabled',
+	'Remove'
+))->removeClass('btn-primary')->addClass('btn-default btn-sm');
+
+$section->add($group);
+
+$group = new Form_Group('');
+
+$group->add(new Form_Button(
+	'movetoenabled',
+	'Move to enabled list >'
+))->removeClass('btn-primary')->addClass('btn-default btn-sm');
+
+$group->add(new Form_Button(
+	'movetodisabled',
+	'< Move to disabled list'
+))->removeClass('btn-primary')->addClass('btn-default btn-sm');
+
+$section->add($group);
+
+if (isset($id) && $a_pool[$id] && $_GET['act'] != 'dup') {
+	$section->addInput(new Form_Input(
+		'id',
+		null,
+		'hidden',
+		$id
+	));
+}
+
+$form->add($section);
+
+print($form);
+
+include("foot.inc");

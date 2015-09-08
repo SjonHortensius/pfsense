@@ -2,32 +2,59 @@
 /* $Id$ */
 /*
 	firewall_shaper.php
-	Copyright (C) 2004, 2005 Scott Ullrich
-	Copyright (C) 2008 Ermal Luçi
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2004, 2005 Scott Ullrich
+ *  Copyright (c)  2008 Ermal Luçi
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+  *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_BUILDER_BINARIES:	/usr/bin/killall
 	pfSense_MODULE: shaper
@@ -54,7 +81,7 @@ if($_GET['reset'] != "") {
 	exit;
 }
 
-$pgtitle = array(gettext("Firewall"),gettext("Traffic Shaper"));
+$pgtitle = array(gettext("Firewall"), gettext("Traffic Shaper"));
 $shortcut_section = "trafficshaper";
 
 $shaperIFlist = get_configured_interface_with_descr();
@@ -65,25 +92,27 @@ read_altq_config();
  */
 
 if ($_GET) {
-	if ($_GET['queue'])
+	if ($_GET['queue']) {
 		$qname = htmlspecialchars(trim($_GET['queue']));
-
-	if ($_GET['interface'])
-			$interface = htmlspecialchars(trim($_GET['interface']));
-
-	if ($_GET['action'])
-			$action = htmlspecialchars($_GET['action']);
+	}
+	if ($_GET['interface']) {
+		$interface = htmlspecialchars(trim($_GET['interface']));
+	}
+	if ($_GET['action']) {
+		$action = htmlspecialchars($_GET['action']);
+	}
 }
 
 if ($_POST) {
-	if ($_POST['name'])
-			$qname = htmlspecialchars(trim($_POST['name']));
-
-	if ($_POST['interface'])
-			$interface = htmlspecialchars(trim($_POST['interface']));
-
-	if ($_POST['parentqueue'])
+	if ($_POST['name']) {
+		$qname = htmlspecialchars(trim($_POST['name']));
+	}
+	if ($_POST['interface']) {
+		$interface = htmlspecialchars(trim($_POST['interface']));
+	}
+	if ($_POST['parentqueue']) {
 		$parentqueue = htmlspecialchars(trim($_POST['parentqueue']));
+	}
 }
 
 if ($interface) {
@@ -91,8 +120,9 @@ if ($interface) {
 
 	if ($altq) {
 		$queue =& $altq->find_queue($interface, $qname);
-	} else
+	} else {
 		$addnewaltq = true;
+	}
 }
 
 $dontshow = false;
@@ -102,20 +132,21 @@ $dfltmsg = false;
 
 if ($_GET) {
 	switch ($action) {
-	case "delete":
+		case "delete":
 			if ($queue) {
 				$queue->delete_queue();
-				if (write_config())
+				if (write_config()) {
 					mark_subsystem_dirty('shaper');
+				}
 			}
 
 			header("Location: firewall_shaper.php");
 			exit;
-		break;
-
-	case "resetall":
-			foreach ($altq_list_queues as $altq)
+			break;
+		case "resetall":
+			foreach ($altq_list_queues as $altq) {
 				$altq->delete_all();
+			}
 			unset($altq_list_queues);
 			$altq_list_queues = array();
 			$tree = "<ul class=\"tree\" >";
@@ -128,8 +159,9 @@ if ($_GET) {
 			$can_enable = false;
 			$dontshow = true;
 			foreach ($config['filter']['rule'] as $key => $rule) {
-				if (isset($rule['wizard']) && $rule['wizard'] == "yes")
+				if (isset($rule['wizard']) && $rule['wizard'] == "yes") {
 					unset($config['filter']['rule'][$key]);
+				}
 			}
 
 			if (write_config()) {
@@ -137,11 +169,11 @@ if ($_GET) {
 				$retval |= filter_configure();
 				$savemsg = get_std_save_message($retval);
 
-				if (stristr($retval, "error") != true)
+				if (stristr($retval, "error") <> true) {
 					$savemsg = get_std_save_message($retval);
-				else
+				} else {
 					$savemsg = $retval;
-
+				}
 			} else {
 				$savemsg = gettext("Unable to write config.xml (Access Denied?)");
 			}
@@ -175,8 +207,9 @@ if ($_GET) {
 			}
 		} else if ($addnewaltq) {
 			$q = new altq_root_queue();
-		} else
+		} else {
 			$input_errors[] = gettext("Could not create new queue/discipline!");
+			}
 
 			if ($q) {
 				$q->SetInterface($interface);
@@ -185,7 +218,7 @@ if ($_GET) {
 				unset($q);
 				$newqueue = true;
 			}
-		break;
+			break;
 		case "show":
 			if ($queue) {
 				$sform = $queue->build_form();
@@ -198,20 +231,24 @@ if ($_GET) {
 			if ($queue) {
 					$queue->SetEnabled("on");
 					$output_form .= $queue->build_form();
-					if (write_config())
+					if (write_config()) {
 						mark_subsystem_dirty('shaper');
-			} else
+					}
+			} else {
 					$input_errors[] = gettext("Queue not found!");
-		break;
+			}
+			break;
 		case "disable":
 			if ($queue) {
-					$queue->SetEnabled("");
-					$output_form .= $queue->build_form();
-					if (write_config())
-						mark_subsystem_dirty('shaper');
-			} else
+				$queue->SetEnabled("");
+				$output_form .= $queue->build_form();
+				if (write_config()) {
+					mark_subsystem_dirty('shaper');
+				}
+			} else {
 					$input_errors[] = gettext("Queue not found!");
-		break;
+			}
+			break;
 		default:
 			$dfltmsg = true;
 			$dontshow = true;
@@ -253,9 +290,9 @@ if ($_POST) {
 			$tmppath[] = $altq->GetInterface();
 			$altq->SetLink($tmppath);
 			$altq->wconfig();
-			if (write_config())
+			if (write_config()) {
 				mark_subsystem_dirty('shaper');
-
+			}
 			$can_enable = true;
 			$can_add = true;
 		}
@@ -274,36 +311,43 @@ if ($_POST) {
 				$tmp->wconfig();
 				$can_enable = true;
 				if ($tmp->CanHaveChildren() && $can_enable) {
-					if ($tmp->GetDefault() != "")
+					if ($tmp->GetDefault() <> "") {
 						$can_add = false;
-					else
+					} else {
 						$can_add = true;
-				} else
+					}
+				} else {
 					$can_add = false;
-				if (write_config())
+				}
+				if (write_config()) {
 					mark_subsystem_dirty('shaper');
+				}
 				$can_enable = true;
-				if ($altq->GetScheduler() != "PRIQ") /* XXX */
-					if ($tmp->GetDefault() != "")
+				if ($altq->GetScheduler() != "PRIQ") { /* XXX */
+					if ($tmp->GetDefault() <> "") {
 						$can_add = false;
-					else
+					} else {
 						$can_add = true;
+					}
+				}
 			}
 			read_altq_config();
 			$output_form .= $tmp->build_form();
-		} else
+		} else {
 			$input_errors[] = gettext("Could not add new queue.");
+		}
 	} else if ($_POST['apply']) {
-			write_config();
+		write_config();
 
-			$retval = 0;
-			$retval = filter_configure();
+		$retval = 0;
+		$retval = filter_configure();
+		$savemsg = get_std_save_message($retval);
+
+		if (stristr($retval, "error") <> true) {
 			$savemsg = get_std_save_message($retval);
-
-			if (stristr($retval, "error") != true)
-					$savemsg = get_std_save_message($retval);
-			else
-					$savemsg = $retval;
+		} else {
+			$savemsg = $retval;
+		}
 
 		/* reset rrd queues */
 		system("rm -f /var/db/rrd/*queuedrops.rrd");
@@ -312,27 +356,23 @@ if ($_POST) {
 
 		clear_subsystem_dirty('shaper');
 
-			if ($queue) {
-				$output_form .= $queue->build_form();
-				$dontshow = false;
-			}
-			else {
-				$dfltmsg = true;
-				$dontshow = true;
-			}
-
+		if ($queue) {
+			$output_form .= $queue->build_form();
+			$dontshow = false;
+		} else {
+			$output_form .= $default_shaper_message;
+			$dontshow = true;
+		}
 	} else if ($queue) {
-				$queue->validate_input($_POST, $input_errors);
-				if (!$input_errors) {
-					$queue->update_altq_queue_data($_POST);
-					$queue->wconfig();
-
-					if (write_config())
-						mark_subsystem_dirty('shaper');
-
-				$dontshow = false;
-				}
-
+		$queue->validate_input($_POST, $input_errors);
+		if (!$input_errors) {
+			$queue->update_altq_queue_data($_POST);
+			$queue->wconfig();
+			if (write_config()) {
+				mark_subsystem_dirty('shaper');
+			}
+			$dontshow = false;
+		}
 		read_altq_config();
 		$output_form .= $queue->build_form();
 	} else	{
@@ -348,18 +388,20 @@ if(!$_POST && !$_GET){
 }
 
 if ($queue) {
-	if ($queue->GetEnabled())
+	if ($queue->GetEnabled()) {
 		$can_enable = true;
-	else
+	} else {
 		$can_enable = false;
-
+	}
 	if ($queue->CanHaveChildren() && $can_enable) {
-		if ($altq->GetQname() != $queue->GetQname() && $queue->GetDefault() != "")
+		if ($altq->GetQname() <> $queue->GetQname() && $queue->GetDefault() <> "") {
 			$can_add = false;
-		else
+		} else {
 			$can_add = true;
-	} else
+		}
+	} else {
 		$can_add = false;
+	}
 }
 
 //$pgtitle = "Firewall: Shaper: By Interface View";
@@ -369,10 +411,9 @@ include("head.inc");
 $tree = '<ul class="tree" >';
 if (is_array($altq_list_queues)) {
 	foreach ($altq_list_queues as $tmpaltq) {
-			$tree .= $tmpaltq->build_tree();
+		$tree .= $tmpaltq->build_tree();
 	}
-
-	$tree .=  get_interface_list_to_show();
+	$tree .= get_interface_list_to_show();
 }
 
 $tree .= "</ul>";

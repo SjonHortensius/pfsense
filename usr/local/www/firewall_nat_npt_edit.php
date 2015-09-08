@@ -2,33 +2,59 @@
 /* $Id$ */
 /*
 	firewall_nat_npt_edit.php
-	part of pfSense (https://www.pfsense.org)
-
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-	Copyright (C) 2011 Seth Mos <seth.mos@dds.nl>.
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2011 Seth Mos <seth.mos@dds.nl>
+ *	part of pfSense (https://www.pfsense.org)
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+  *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_MODULE: nat
 */
@@ -47,8 +73,9 @@ function natnptcmp($a, $b) {
 function nat_npt_rules_sort() {
 	global $g, $config;
 
-	if (!is_array($config['nat']['npt']))
-		return;
+	if (!is_array($config['nat']['npt'])) {
+			return;
+	}
 
 	usort($config['nat']['npt'], "natnptcmp");
 }
@@ -70,11 +97,12 @@ if (!is_array($config['nat']['npt']))
 
 $a_npt = &$config['nat']['npt'];
 
-if (is_numericint($_GET['id']))
+if (is_numericint($_GET['id'])) {
 	$id = $_GET['id'];
-
-if (isset($_POST['id']) && is_numericint($_POST['id']))
+}
+if (isset($_POST['id']) && is_numericint($_POST['id'])) {
 	$id = $_POST['id'];
+}
 
 if (isset($id) && $a_npt[$id]) {
 	$pconfig['disabled'] = isset($a_npt[$id]['disabled']);
@@ -88,17 +116,19 @@ if (isset($id) && $a_npt[$id]) {
 		$pconfig['dstbeginport'], $pconfig['dstendport']);
 
 	$pconfig['interface'] = $a_npt[$id]['interface'];
-
-	if (!$pconfig['interface'])
+	if (!$pconfig['interface']) {
 		$pconfig['interface'] = "wan";
+	}
 
 	$pconfig['external'] = $a_npt[$id]['external'];
 	$pconfig['descr'] = $a_npt[$id]['descr'];
-} else
+} else {
 	$pconfig['interface'] = "wan";
+}
 
 
 if ($_POST) {
+
 	unset($input_errors);
 	$pconfig = $_POST;
 
@@ -119,27 +149,27 @@ if ($_POST) {
 		$natent['descr'] = $_POST['descr'];
 		$natent['interface'] = $_POST['interface'];
 
-		if ($_POST['src'])
+		if ($_POST['src']) {
 			$_POST['src'] = trim($_POST['src']);
-
-		if ($_POST['dst'])
+		}
+		if ($_POST['dst']) {
 			$_POST['dst'] = trim($_POST['dst']);
+		}
 
-		pconfig_to_address($natent['source'], $_POST['src'],
-						$_POST['srcmask'], $_POST['srcnot']);
+		pconfig_to_address($natent['source'], $_POST['src'], $_POST['srcmask'], $_POST['srcnot']);
 
-		pconfig_to_address($natent['destination'], $_POST['dst'],
-				$_POST['dstmask'], $_POST['dstnot']);
+		pconfig_to_address($natent['destination'], $_POST['dst'], $_POST['dstmask'], $_POST['dstnot']);
 
-		if (isset($id) && $a_npt[$id])
+		if (isset($id) && $a_npt[$id]) {
 			$a_npt[$id] = $natent;
-		else
+		} else {
 			$a_npt[] = $natent;
-
+		}
 		nat_npt_rules_sort();
 
-		if (write_config())
+		if (write_config()) {
 			mark_subsystem_dirty('natconf');
+		}
 
 		header("Location: firewall_nat_npt.php");
 		exit;

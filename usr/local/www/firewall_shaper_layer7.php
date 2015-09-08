@@ -2,31 +2,58 @@
 /* $Id$ */
 /*
 	firewall_shaper_layer7.php
-	Copyright (C) 2008 Helder Pereira, André Ribeiro
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2008 Helder Pereira, André Ribeiro
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+  *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_BUILDER_BINARIES:	/usr/bin/killall
 	pfSense_MODULE: shaper
@@ -45,14 +72,11 @@ require_once("functions.inc");
 require_once("filter.inc");
 require_once("shaper.inc");
 
-print('POST: '); print_r($_POST); print('<br />');
-print('GET: '); print_r($_GET); print('<br />');
-
 $dfltmsg = false;
 
 // Variables protocols (dynamic) and structures (static)
 $avail_protos =& generate_protocols_array();
-$avail_structures = array("action","queue","limiter");
+$avail_structures = array("action", "queue", "limiter");
 
 // Available behaviours
 $avail_behaviours_action = array("block");
@@ -63,7 +87,7 @@ $avail_behaviours_limiter = get_dummynet_name_list();
 $show_proto_form = false;
 
 //More variables
-$pgtitle = array(gettext("Firewall"),gettext("Traffic Shaper"), gettext("Layer7"));
+$pgtitle = array(gettext("Firewall"), gettext("Traffic Shaper"), gettext("Layer7"));
 $shortcut_section = "trafficshaper";
 
 $default_layer7shaper_msg = '<br />' .
@@ -81,14 +105,15 @@ if($_GET['reset'] != "") {
 }
 
 if ($_GET) {
-	if ($_GET['container'])
+	if ($_GET['container']) {
 		$name = htmlspecialchars(trim($_GET['container']));
-
-	if ($_GET['action'])
+	}
+	if ($_GET['action']) {
 		$action = htmlspecialchars($_GET['action']);
+	}
 }
 
-if($_POST) {
+if ($_POST) {
 	if ($_POST['container']) {
 		$name = htmlspecialchars(trim($_POST['container']));
 	}
@@ -139,42 +164,38 @@ if ($_POST) {
 			$l7r =& new layer7();
 			$_POST['divert_port'] = $l7r->gen_divert_port();
 		}
-
-		for($i=0; $_POST['protocol'][$i] != ""; $i++) {
+		for ($i = 0; $_POST['protocol'][$i] <> ""; $i++) {
 			$_POST['l7rules'][$i]['protocol'] = $_POST['protocol'][$i];
 			$_POST['l7rules'][$i]['structure'] = $_POST['structure'][$i];
 			$_POST['l7rules'][$i]['behaviour'] = $_POST['behaviour'][$i];
 		}
-
-		$l7r->validate_input($_POST,$input_errors);
+		$l7r->validate_input($_POST, $input_errors);
 		$l7r->ReadConfig($_POST['container'], $_POST);
 		//Before writing the results, we need to test for repeated protocols
 		$non_dupes = array();
 		$dupes = array();
-
-		for($j=0; $j<$i; $j++) {
-			if(!$non_dupes[$_POST['protocol'][$j]])
+		for ($j = 0; $j < $i; $j++) {
+			if (!$non_dupes[$_POST['protocol'][$j]]) {
 				$non_dupes[$_POST['protocol'][$j]] = true;
-			else
+			} else {
 				$dupes[] = $_POST['protocol'][$j];
+			}
 		}
 
 		unset($non_dupes);
-
-		if(sizeof($dupes) == 0 && !$input_errors) {
+		if (sizeof($dupes) == 0 && !$input_errors) {
 			$l7r->wconfig();
-			if (write_config())
+			if (write_config()) {
 				mark_subsystem_dirty('shaper');
+			}
 
 			read_layer7_config();
-		}
-		else {
-			if(sizeof($dupes) > 0) {
+		} else {
+			if (sizeof($dupes) > 0) {
 				$dupe_error = gettext("Found the following repeated protocol definitions") . ": ";
-
-				foreach($dupes as $dupe)
+				foreach ($dupes as $dupe) {
 					$dupe_error .= "$dupe ";
-
+				}
 				$input_errors[] .= $dupe_error;
 			}
 		}
@@ -186,21 +207,21 @@ if ($_POST) {
 		$sform = $l7r->build_form();
 		//Necessary to correctly build the proto form
 		$container = $layer7_rules_list[$name];
-
-		if($input_errors)
+		if ($input_errors) {
 			$container =& $l7r;
-
-	} else if($_POST['apply']) {
+		}
+	} else if ($_POST['apply']) {
 		write_config();
 
 		$retval = 0;
 		$retval = filter_configure();
 		$savemsg = get_std_save_message($retval);
 
-		if(stristr($retval, "error") != true)
+		if (stristr($retval, "error") <> true) {
 			$savemsg = get_std_save_message($retval);
-		else
+		} else {
 			$savemsg = $retval;
+		}
 
 		clear_subsystem_dirty('shaper');
 
@@ -212,16 +233,14 @@ if ($_POST) {
 		}
 	} else if ($_POST['delete']) {
 		$container->delete_l7c();
-
-		if (write_config())
+		if (write_config()) {
 			mark_subsystem_dirty('shaper');
-
+		}
 		unset($container);
 
 		header("Location: firewall_shaper_layer7.php");
 		exit;
-	}
-	else {
+	} else {
 		$show_proto_form = false;
 	}
 }
@@ -234,8 +253,9 @@ if(!$_GET && !$_POST) {
 // Builds the left tree
 $tree = "<ul class=\"tree\" >";
 if (is_array($layer7_rules_list)) {
-	foreach ($layer7_rules_list as $tmpl7)
+	foreach ($layer7_rules_list as $tmpl7) {
 		$tree .= $tmpl7->build_tree();
+	}
 }
 
 $tree .= "</ul>";
@@ -274,12 +294,14 @@ function array_altq(a_behav) {
 
 function array_limiter(a_behav) {
 	var index;
-	<?php if (!empty($avail_behaviours_limiter)) {
-	  foreach ($avail_behaviours_limiter as $key => $limiter) { ?>
+	<?php
+	if (!empty($avail_behaviours_limiter)) {
+		foreach ($avail_behaviours_limiter as $key => $limiter) { ?>
 		name = "<?= $limiter; ?>";
 		index = <?= $key; ?>;
 		a_behav[index] = name;
-	<?php }
+	<?php
+		}
 	} ?>
 	return a_behav;
 }
@@ -342,12 +364,10 @@ function changeBehaviourValues(row) {
 
 	if (structureSelected == "action") {
 		a_behav = js_behaviours_action; //static
-	}
-	else {
+	} else {
 		if (structureSelected == "queue") {
 			a_behav = js_behaviours_altq;
-		}
-		else {
+		} else {
 			a_behav = js_behaviours_limiter;
 		}
 	}
@@ -356,7 +376,7 @@ function changeBehaviourValues(row) {
 	//Build the html statement with the array values previously selected
 	var new_behav;
 	var name;
-	for(i=0; i<a_behav.length; i++) {
+	for (i = 0; i < a_behav.length; i++) {
 		new_behav += "<option value=" + a_behav[i] + ">" + a_behav[i] + "<\/option>";
 	}
 
@@ -379,31 +399,31 @@ function addRow(table_id) {
 
   var remove = '<a class="btn  btn-default" onclick="removeRow(\''+table_id+'\',this.parentNode.parentNode)">Remove<\/a>';
 
-  try {
-	var newRow = tbl.insertRow(rows_count);
-	var newCell = newRow.insertCell(0);
-	newCell.innerHTML = fillProtocol();
-	var newCell = newRow.insertCell(1);
-	newCell.innerHTML = fillStructure();
-	var newCell = newRow.insertCell(2);
-	newCell.innerHTML = fillBehaviour();
-	var newCell = newRow.insertCell(3);
-	newCell.innerHTML = remove;
-  }
-  catch (ex) {
-	//if exception occurs
-	alert(ex);
-  }
+	try {
+		var newRow = tbl.insertRow(rows_count);
+		var newCell = newRow.insertCell(0);
+		newCell.innerHTML = fillProtocol();
+		var newCell = newRow.insertCell(1);
+		newCell.innerHTML = fillStructure();
+		var newCell = newRow.insertCell(2);
+		newCell.innerHTML = fillBehaviour();
+		var newCell = newRow.insertCell(3);
+		newCell.innerHTML = remove;
+	}
+	catch (ex) {
+		//if exception occurs
+		alert(ex);
+	}
 }
 
 /* Remove row from the table */
-function removeRow(tbl,row) {
-  var table = document.getElementById(tbl);
-  try {
-	table.deleteRow(row.rowIndex);
-  } catch (ex) {
-	alert(ex);
-  }
+function removeRow(tbl, row) {
+	var table = document.getElementById(tbl);
+	try {
+		table.deleteRow(row.rowIndex);
+	} catch (ex) {
+		alert(ex);
+	}
 }
 //]]>
 </script>

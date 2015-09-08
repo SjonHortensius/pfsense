@@ -1,7 +1,7 @@
 <?php
 /* $Id$ */
 /*
-	Copyright (C) 2010 Ermal Lu�i
+	Copyright (C) 2010 Ermal Luçi
 	All rights reserved.
 
 	Copyright (C) 2007, 2008 Scott Ullrich <sullrich@gmail.com>
@@ -309,7 +309,7 @@ function get_user_privileges(& $user) {
 	foreach ($names as $name) {
 		$group = getGroupEntry($name);
 		if (is_array($group['priv'])) {
-			$privs = array_merge( $privs, $group['priv']);
+			$privs = array_merge($privs, $group['priv']);
 		}
 	}
 
@@ -369,7 +369,7 @@ function local_sync_accounts() {
 	$fd = popen("/usr/sbin/pw usershow -a", "r");
 	if ($fd) {
 		while (!feof($fd)) {
-			$line = explode(":",fgets($fd));
+			$line = explode(":", fgets($fd));
 			if (((!strncmp($line[0], "_", 1)) || ($line[2] < 2000) || ($line[2] > 65000)) && ($line[0] != "admin")) {
 				continue;
 			}
@@ -392,7 +392,7 @@ function local_sync_accounts() {
 	$fd = popen("/usr/sbin/pw groupshow -a", "r");
 	if ($fd) {
 		while (!feof($fd)) {
-			$line = explode(":",fgets($fd));
+			$line = explode(":", fgets($fd));
 			if (!strncmp($line[0], "_", 1)) {
 				continue;
 			}
@@ -520,7 +520,6 @@ function local_user_set(& $user) {
 	/* create user directory if required */
 	if (!is_dir($user_home)) {
 		mkdir($user_home, 0700);
-		mwexec("/bin/cp /root/.* {$home_base}/", true);
 	}
 	@chown($user_home, $user_name);
 	@chgrp($user_home, $user_group);
@@ -588,7 +587,7 @@ function local_user_set_password(& $user, $password) {
 	$ustr = '';
 	for ($i = 0; $i < strlen($astr); $i++) {
 		$a = ord($astr{$i}) << 8;
-		$ustr.= sprintf("%X", $a);
+		$ustr .= sprintf("%X", $a);
 	}
 
 	// Generate the NT-HASH from the unicode string
@@ -604,7 +603,7 @@ function local_user_get_groups($user, $all = false) {
 	}
 
 	foreach ($config['system']['group'] as $group) {
-		if ( $all || ( !$all && ($group['name'] != "all"))) {
+		if ($all || (!$all && ($group['name'] != "all"))) {
 			if (is_array($group['member'])) {
 				if (in_array($user['uid'], $group['member'])) {
 					$groups[] = $group['name'];
@@ -623,7 +622,7 @@ function local_user_get_groups($user, $all = false) {
 
 }
 
-function local_user_set_groups($user, $new_groups = NULL ) {
+function local_user_set_groups($user, $new_groups = NULL) {
 	global $debug, $config, $groupindex;
 
 	if (!is_array($config['system']['group'])) {
@@ -643,7 +642,7 @@ function local_user_set_groups($user, $new_groups = NULL ) {
 
 	/* determine which memberships to add */
 	foreach ($new_groups as $groupname) {
-		if ($groupname == '' || in_array($groupname,$cur_groups)) {
+		if ($groupname == '' || in_array($groupname, $cur_groups)) {
 			continue;
 		}
 		$group = & $config['system']['group'][$groupindex[$groupname]];
@@ -654,7 +653,7 @@ function local_user_set_groups($user, $new_groups = NULL ) {
 
 	/* determine which memberships to remove */
 	foreach ($cur_groups as $groupname) {
-		if (in_array($groupname,$new_groups)) {
+		if (in_array($groupname, $new_groups)) {
 			continue;
 		}
 		if (!isset($config['system']['group'][$groupindex[$groupname]])) {
@@ -700,7 +699,7 @@ function local_group_set($group, $reset = false) {
 	$group_gid = $group['gid'];
 	$group_members = '';
 	if (!$reset && !empty($group['member']) && count($group['member']) > 0) {
-		$group_members = implode(",",$group['member']);
+		$group_members = implode(",", $group['member']);
 	}
 
 	if (empty($group_name)) {
@@ -763,7 +762,7 @@ function ldap_test_connection($authcfg) {
 	}
 
 	/* first check if there is even an LDAP server populated */
-	if ( !$ldapserver) {
+	if (!$ldapserver) {
 		return false;
 	}
 
@@ -972,8 +971,8 @@ function ldap_get_user_ous($show_complete_ou=true, $authcfg) {
 			if (!$show_complete_ou) {
 				$inf_split = explode(",", $inf['dn']);
 				$ou = $inf_split[0];
-				$ou = str_replace("OU=","", $ou);
-				$ou = str_replace("CN=","", $ou);
+				$ou = str_replace("OU=", "", $ou);
+				$ou = str_replace("CN=", "", $ou);
 			} else {
 				if ($inf['dn']) {
 					$ou = $inf['dn'];
@@ -1111,7 +1110,7 @@ function ldap_get_groups($username, $authcfg) {
 	/* Time to close LDAP connection */
 	@ldap_unbind($ldap);
 
-	$groups = print_r($memberof,true);
+	$groups = print_r($memberof, true);
 
 	//log_error("Returning groups ".$groups." for user $username");
 
@@ -1230,8 +1229,8 @@ function ldap_backed($username, $passwd, $authcfg) {
 	/* Get LDAP Authcontainers and split em up. */
 	$ldac_splits = explode(";", $ldapauthcont);
 
-	/* setup the usercount so we think we havn't found anyone yet */
-	$usercount  = 0;
+	/* setup the usercount so we think we haven't found anyone yet */
+	$usercount = 0;
 
 	/*****************************************************************/
 	/*  We First find the user based on username and filter          */
@@ -1259,15 +1258,15 @@ function ldap_backed($username, $passwd, $authcfg) {
 		}
 		/* Support legacy auth container specification. */
 		if (stristr($ldac_split, "DC=") || empty($ldapbasedn)) {
-			$search	 = @$ldapfunc($ldap,$ldac_split,$ldapfilter);
+			$search = @$ldapfunc($ldap,$ldac_split,$ldapfilter);
 		} else {
-			$search  = @$ldapfunc($ldap,$ldapsearchbasedn,$ldapfilter);
+			$search = @$ldapfunc($ldap,$ldapsearchbasedn,$ldapfilter);
 		}
 		if (!$search) {
 			log_error(sprintf(gettext("Search resulted in error: %s"), ldap_error($ldap)));
 			continue;
 		}
-		$info = ldap_get_entries($ldap,$search);
+		$info = ldap_get_entries($ldap, $search);
 		$matches = $info['count'];
 		if ($matches == 1) {
 			$userdn = $_SESSION['ldapdn'] = $info[0]['dn'];
@@ -1376,7 +1375,7 @@ function get_user_expiration_date($username) {
 function is_account_expired($username) {
 	$expirydate = get_user_expiration_date($username);
 	if ($expirydate) {
-		if (strtotime("-1 day") > strtotime(date("m/d/Y",strtotime($expirydate)))) {
+		if (strtotime("-1 day") > strtotime(date("m/d/Y", strtotime($expirydate)))) {
 			return true;
 		}
 	}
@@ -1420,7 +1419,7 @@ function auth_get_authserver_list() {
 		}
 	}
 
-	$list["Local Database"] = array( "name" => gettext("Local Database"), "type" => "Local Auth", "host" => $config['system']['hostname']);
+	$list["Local Database"] = array("name" => gettext("Local Database"), "type" => "Local Auth", "host" => $config['system']['hostname']);
 	return $list;
 }
 

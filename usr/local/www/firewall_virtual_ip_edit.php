@@ -3,42 +3,60 @@
 /*
 
 	firewall_virtual_ip_edit.php
-	part of pfSense (https://www.pfsense.org/)
-
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-
-	Copyright (C) 2005 Bill Marquette <bill.marquette@gmail.com>.
-	All rights reserved.
-
-	Includes code from m0n0wall which is:
-	Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>.
-	All rights reserved.
-
-	Includes code from pfSense which is:
-	Copyright (C) 2004-2005 Scott Ullrich <geekgod@pfsense.com>.
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2004 Scott Ullrich
+ *  Copyright (c)  2005 Bill Marquette <bill.marquette@gmail.com>
+ *	Originally part of pfSense (https://www.pfsense.org)
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_BUILDER_BINARIES:	/sbin/ifconfig
 	pfSense_MODULE: interfaces
@@ -61,11 +79,12 @@ if (!is_array($config['virtualip']['vip'])) {
 
 $a_vip = &$config['virtualip']['vip'];
 
-if (is_numericint($_GET['id']))
+if (is_numericint($_GET['id'])) {
 	$id = $_GET['id'];
-
-if (isset($_POST['id']) && is_numericint($_POST['id']))
+}
+if (isset($_POST['id']) && is_numericint($_POST['id'])) {
 	$id = $_POST['id'];
+}
 
 function return_first_two_octets($ip) {
 	$ip_split = explode(".", $ip);
@@ -76,10 +95,10 @@ function find_last_used_vhid() {
 	global $config, $g;
 
 	$vhid = 0;
-
-	foreach($config['virtualip']['vip'] as $vip) {
-		if($vip['vhid'] > $vhid)
+	foreach ($config['virtualip']['vip'] as $vip) {
+		if ($vip['vhid'] > $vhid) {
 			$vhid = $vip['vhid'];
+		}
 	}
 
 	return $vhid;
@@ -116,33 +135,38 @@ if ($_POST) {
 
 	do_input_validation($_POST, $reqdfields, $reqdfieldsn, $input_errors);
 
-	if ($_POST['subnet'])
+	if ($_POST['subnet']) {
 		$_POST['subnet'] = trim($_POST['subnet']);
+	}
 
 	if ($_POST['subnet']) {
-		if (!is_ipaddr($_POST['subnet']))
+		if (!is_ipaddr($_POST['subnet'])) {
 			$input_errors[] = gettext("A valid IP address must be specified.");
-		else {
+		} else {
 			if (isset($id) && isset($a_vip[$id])) {
 				$ignore_if = $a_vip[$id]['interface'];
 				$ignore_mode = $a_vip[$id]['mode'];
-				if (isset($a_vip[$id]['vhid']))
+				if (isset($a_vip[$id]['vhid'])) {
 					$ignore_vhid = $a_vip[$id]['vhid'];
+				}
 			} else {
 				$ignore_if = $_POST['interface'];
 				$ignore_mode = $_POST['mode'];
 			}
 
-			if (!isset($ignore_vhid))
+			if (!isset($ignore_vhid)) {
 				$ignore_vhid = $_POST['vhid'];
+			}
 
-			if ($ignore_mode == 'carp')
+			if ($ignore_mode == 'carp') {
 				$ignore_if .= "_vip{$ignore_vhid}";
-			else
+			} else {
 				$ignore_if .= "_virtualip{$id}";
+			}
 
-			if (is_ipaddr_configured($_POST['subnet'], $ignore_if))
+			if (is_ipaddr_configured($_POST['subnet'], $ignore_if)) {
 				$input_errors[] = gettext("This IP address is being used by another interface or VIP.");
+			}
 
 			unset($ignore_if, $ignore_mode);
 		}
@@ -150,8 +174,9 @@ if ($_POST) {
 
 	$natiflist = get_configured_interface_with_descr();
 	foreach ($natiflist as $natif => $natdescr) {
-		if ($_POST['interface'] == $natif && (empty($config['interfaces'][$natif]['ipaddr']) && empty($config['interfaces'][$natif]['ipaddrv6'])))
+		if ($_POST['interface'] == $natif && (empty($config['interfaces'][$natif]['ipaddr']) && empty($config['interfaces'][$natif]['ipaddrv6']))) {
 			$input_errors[] = gettext("The interface chosen for the VIP has no IPv4 or IPv6 address configured so it cannot be used as a parent for the VIP.");
+		}
 	}
 
 	/* ipalias and carp should not use network or broadcast address */
@@ -159,15 +184,16 @@ if ($_POST) {
 		if (is_ipaddrv4($_POST['subnet']) && $_POST['subnet_bits'] != "32") {
 			$network_addr = gen_subnet($_POST['subnet'], $_POST['subnet_bits']);
 			$broadcast_addr = gen_subnet_max($_POST['subnet'], $_POST['subnet_bits']);
-		} else if (is_ipaddrv6($_POST['subnet']) && $_POST['subnet_bits'] != "128" ) {
+		} else if (is_ipaddrv6($_POST['subnet']) && $_POST['subnet_bits'] != "128") {
 			$network_addr = gen_subnetv6($_POST['subnet'], $_POST['subnet_bits']);
 			$broadcast_addr = gen_subnetv6_max($_POST['subnet'], $_POST['subnet_bits']);
 		}
 
-		if (isset($network_addr) && $_POST['subnet'] == $network_addr)
+		if (isset($network_addr) && $_POST['subnet'] == $network_addr) {
 			$input_errors[] = gettext("You cannot use the network address for this VIP");
-		else if (isset($broadcast_addr) && $_POST['subnet'] == $broadcast_addr)
+		} else if (isset($broadcast_addr) && $_POST['subnet'] == $broadcast_addr) {
 			$input_errors[] = gettext("You cannot use the broadcast address for this VIP");
+		}
 	}
 
 	/* make sure new ip is within the subnet of a valid ip
@@ -251,10 +277,11 @@ if ($_POST) {
 
 		/* Common fields */
 		$vipent['descr'] = $_POST['descr'];
-		if (isset($_POST['type']))
+		if (isset($_POST['type'])) {
 			$vipent['type'] = $_POST['type'];
-		else
+		} else {
 			$vipent['type'] = "single";
+		}
 
 		if ($vipent['type'] == "single" || $vipent['type'] == "network") {
 			if (!isset($_POST['subnet_bits'])) {
@@ -266,21 +293,23 @@ if ($_POST) {
 			$vipent['subnet'] = $_POST['subnet'];
 		}
 
-		if (!isset($id))
+		if (!isset($id)) {
 			$id = count($a_vip);
-
-		if (file_exists("{$g['tmp_path']}/.firewall_virtual_ip.apply"))
+		}
+		if (file_exists("{$g['tmp_path']}/.firewall_virtual_ip.apply")) {
 			$toapplylist = unserialize(file_get_contents("{$g['tmp_path']}/.firewall_virtual_ip.apply"));
-		else
+		} else {
 			$toapplylist = array();
+		}
 
 		$toapplylist[$id] = $a_vip[$id];
 
 		if (!empty($a_vip[$id])) {
 			/* modify all virtual IP rules with this address */
 			for ($i = 0; isset($config['nat']['rule'][$i]); $i++) {
-				if ($config['nat']['rule'][$i]['destination']['address'] == $a_vip[$id]['subnet'])
+				if ($config['nat']['rule'][$i]['destination']['address'] == $a_vip[$id]['subnet']) {
 					$config['nat']['rule'][$i]['destination']['address'] = $vipent['subnet'];
+				}
 			}
 		}
 
@@ -481,6 +510,7 @@ events.push(function(){
 		disableInput('advskew', true);
 		disableInput('subnet_bits', true);
 		disableInput('type', true);
+		disableInput('password', true);
 		hideCheckbox('noexpand', true);
 
 		if(mode == 'ipalias') {
@@ -495,11 +525,13 @@ events.push(function(){
 			disableInput('advbase', false);
 			disableInput('advskew', false);
 			disableInput('subnet_bits', false);
+			disableInput('password', false);
 			$('#type').val('single');
 		}
 		else if(mode == 'proxyarp') {
 			$('#address_note').html("<?=$proxyarphelp?>");
 			disableInput('type', false);
+			disableInput('subnet_bits', $('#type').val() == 'single');
 		}
 		else {
 			$('#address_note').html('');
@@ -512,8 +544,9 @@ events.push(function(){
 		check_mode();
 	});
 
-	// On clicking hte address type selector
+	// On clicking the address type selector
 	$('#type').on('change', function() {
+		check_mode();
 		hideCheckbox('noexpand', (this.value == 'single'));
 	});
 

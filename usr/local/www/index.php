@@ -2,35 +2,58 @@
 /* $Id$ */
 /*
 	index.php
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-	Copyright (C) 2004-2012 Scott Ullrich
-	All rights reserved.
-
-	Originally part of m0n0wall (http://m0n0.ch/wall)
-	Copyright (C) 2003-2004 Manuel Kasper <mk@neon1.net>.
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-		this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-		notice, this list of conditions and the following disclaimer in the
-		documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	oR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2004-2012 Scott Ullrich
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_BUILDER_BINARIES:	/sbin/ifconfig
 	pfSense_MODULE:	interfaces
@@ -44,7 +67,7 @@
 ##|-PRIV
 
 // Turn on buffering to speed up rendering
-ini_set('output_buffering','true');
+ini_set('output_buffering', 'true');
 
 // Start buffering with a cache size of 100000
 ob_start(null, "1000");
@@ -56,29 +79,32 @@ require_once('functions.inc');
 require_once('notices.inc');
 require_once("pkg-utils.inc");
 
-if(isset($_REQUEST['closenotice'])){
+if (isset($_REQUEST['closenotice'])) {
 	close_notice($_REQUEST['closenotice']);
 	echo get_menu_messages();
 	exit;
 }
 
-if($g['disablecrashreporter'] != true) {
+if ($g['disablecrashreporter'] != true) {
 	// Check to see if we have a crash report
 	$x = 0;
-	if(file_exists("/tmp/PHP_errors.log")) {
+	if (file_exists("/tmp/PHP_errors.log")) {
 		$total = `/usr/bin/grep -vi warning /tmp/PHP_errors.log | /usr/bin/wc -l | /usr/bin/awk '{ print $1 }'`;
-		if($total > 0)
+		if ($total > 0) {
 			$x++;
+		}
 	}
 	$crash = glob("/var/crash/*");
 	$skip_files = array(".", "..", "minfree", "");
-	if(is_array($crash)) {
-		foreach($crash as $c) {
-			if (!in_array(basename($c), $skip_files))
+	if (is_array($crash)) {
+		foreach ($crash as $c) {
+			if (!in_array(basename($c), $skip_files)) {
 				$x++;
+			}
 		}
-		if($x > 0)
+		if ($x > 0) {
 			$savemsg = "{$g['product_name']} has detected a crash report or programming bug.  Click <a href='crash_reporter.php'>here</a> for more information.";
+		}
 	}
 }
 
@@ -225,14 +251,15 @@ if ($config['widgets'] && $config['widgets']['sequence'] != "") {
 ##build list of php include files
 $phpincludefiles = array();
 $directory = "/usr/local/www/widgets/include/";
-$dirhandle  = opendir($directory);
+$dirhandle = opendir($directory);
 $filename = "";
 while (false !== ($filename = readdir($dirhandle))) {
 	$phpincludefiles[] = $filename;
 }
-foreach($phpincludefiles as $includename) {
-	if(!stristr($includename, ".inc"))
+foreach ($phpincludefiles as $includename) {
+	if (!stristr($includename, ".inc")) {
 		continue;
+	}
 	include($directory . $includename);
 }
 
@@ -241,11 +268,13 @@ $pgtitle = array(gettext("Status: Dashboard"));
 include("head.inc");
 
 /* Print package server mismatch warning. See https://redmine.pfsense.org/issues/484 */
-if (!verify_all_package_servers())
+if (!verify_all_package_servers()) {
 	print_info_box(package_server_mismatch_message());
+}
 
-if ($savemsg)
+if ($savemsg) {
 	print_info_box($savemsg);
+}
 
 pfSense_handle_custom_code("/usr/local/pkg/dashboard/pre_dashboard");
 

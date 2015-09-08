@@ -2,41 +2,60 @@
 /* $Id$ */
 /*
 	firewall_virtual_ip.php
-	part of pfSense (https://www.pfsense.org/)
-
-	Copyright (C) 2005 Bill Marquette <bill.marquette@gmail.com>.
-	Copyright (C) 2013-2015 Electric Sheep Fencing, LP
-	All rights reserved.
-
-	Includes code from m0n0wall which is:
-	Copyright (C) 2003-2005 Manuel Kasper <mk@neon1.net>.
-	All rights reserved.
-
-	Includes code from pfSense which is:
-	Copyright (C) 2004-2005 Scott Ullrich <geekgod@pfsense.com>.
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2004, 2005 Scott Ullrich
+ *  Copyright (c)  22003-2005 Manuel Kasper <mk@neon1.net>
+ *	part of pfSense (https://www.pfsense.org/)
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+  *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 /*
 	pfSense_BUILDER_BINARIES:	/sbin/ifconfig
 	pfSense_MODULE: interfaces
@@ -64,14 +83,13 @@ if ($_POST) {
 	$pconfig = $_POST;
 
 	if ($_POST['apply']) {
+		$check_carp = false;
 		if (file_exists("{$g['tmp_path']}/.firewall_virtual_ip.apply")) {
-
 			$toapplylist = unserialize(file_get_contents("{$g['tmp_path']}/.firewall_virtual_ip.apply"));
-
 			foreach ($toapplylist as $vid => $ovip) {
-				if (!empty($ovip))
+				if (!empty($ovip)) {
 					interface_vip_bring_down($ovip);
-
+				}
 				if ($a_vip[$vid]) {
 					switch ($a_vip[$vid]['mode']) {
 						case "ipalias":
@@ -81,6 +99,7 @@ if ($_POST) {
 							interface_proxyarp_configure($a_vip[$vid]['interface']);
 							break;
 						case "carp":
+							$check_carp = true;
 							interface_carp_configure($a_vip[$vid]);
 							break;
 						default:
@@ -89,6 +108,10 @@ if ($_POST) {
 				}
 			}
 			@unlink("{$g['tmp_path']}/.firewall_virtual_ip.apply");
+		}
+		/* Before changing check #4633 */
+		if ($check_carp === true && !get_carp_status()) {
+			set_single_sysctl("net.inet.carp.allow", "1");
 		}
 
 		$retval = 0;
@@ -113,6 +136,26 @@ if ($_GET['act'] == "del") {
 			}
 		}
 
+		/* make sure no OpenVPN server or client references this entry */
+		$openvpn_types_a = array("openvpn-server" => gettext("server"), "openvpn-client" => gettext("client"));
+		foreach ($openvpn_types_a as $openvpn_type => $openvpn_type_text) {
+			if (is_array($config['openvpn'][$openvpn_type])) {
+				foreach ($config['openvpn'][$openvpn_type] as $openvpn) {
+					if ($openvpn['ipaddr'] <> "") {
+						if ($openvpn['ipaddr'] == $a_vip[$_GET['id']]['subnet']) {
+							if (strlen($openvpn['description'])) {
+								$openvpn_desc = $openvpn['description'];
+							} else {
+								$openvpn_desc = $openvpn['ipaddr'] . ":" . $openvpn['local_port'];
+							}
+							$input_errors[] = sprintf(gettext("This entry cannot be deleted because it is still referenced by OpenVPN %s %s."), $openvpn_type_text, $openvpn_desc);
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		if (is_ipaddrv6($a_vip[$_GET['id']]['subnet'])) {
 			$is_ipv6 = true;
 			$subnet = gen_subnetv6($a_vip[$_GET['id']]['subnet'], $a_vip[$_GET['id']]['subnet_bits']);
@@ -129,18 +172,19 @@ if ($_GET['act'] == "del") {
 		$if_subnet .= "/" . $if_subnet_bits;
 
 		if (is_array($config['gateways']['gateway_item'])) {
-			foreach($config['gateways']['gateway_item'] as $gateway) {
-				if ($a_vip[$_GET['id']]['interface'] != $gateway['interface'])
+			foreach ($config['gateways']['gateway_item'] as $gateway) {
+				if ($a_vip[$_GET['id']]['interface'] != $gateway['interface']) {
 					continue;
-
-				if ($is_ipv6 && $gateway['ipprotocol'] == 'inet')
+				}
+				if ($is_ipv6 && $gateway['ipprotocol'] == 'inet') {
 					continue;
-
-				if (!$is_ipv6 && $gateway['ipprotocol'] == 'inet6')
+				}
+				if (!$is_ipv6 && $gateway['ipprotocol'] == 'inet6') {
 					continue;
-
-				if (ip_in_subnet($gateway['gateway'], $if_subnet))
+				}
+				if (ip_in_subnet($gateway['gateway'], $if_subnet)) {
 					continue;
+				}
 
 
 				if (ip_in_subnet($gateway['gateway'], $subnet)) {
@@ -156,38 +200,42 @@ if ($_GET['act'] == "del") {
 			$found_carp = false;
 			$found_other_alias = false;
 
-			if ($subnet == $if_subnet)
+			if ($subnet == $if_subnet) {
 				$found_if = true;
+			}
 
 			$vipiface = $a_vip[$_GET['id']]['interface'];
 
 			foreach ($a_vip as $vip_id => $vip) {
-				if ($vip_id == $_GET['id'])
+				if ($vip_id == $_GET['id']) {
 					continue;
+				}
 
 				if ($vip['interface'] == $vipiface && ip_in_subnet($vip['subnet'], $subnet)) {
-					if ($vip['mode'] == "carp")
+					if ($vip['mode'] == "carp") {
 						$found_carp = true;
-					else if ($vip['mode'] == "ipalias")
+					} else if ($vip['mode'] == "ipalias") {
 						$found_other_alias = true;
+					}
 				}
 			}
 
-			if ($found_carp === true && $found_other_alias === false && $found_if === false)
+			if ($found_carp === true && $found_other_alias === false && $found_if === false) {
 				$input_errors[] = gettext("This entry cannot be deleted because it is still referenced by a CARP IP with the description") . " {$vip['descr']}.";
-			} else if ($a_vip[$_GET['id']]['mode'] == "carp") {
-				$vipiface = "{$a_vip[$_GET['id']]['interface']}_vip{$a_vip[$_GET['id']]['vhid']}";
-
-				foreach ($a_vip as $vip) {
-				   if ($vipiface == $vip['interface'] && $vip['mode'] == "ipalias")
-					   $input_errors[] = gettext("This entry cannot be deleted because it is still referenced by an IP alias entry with the description") . " {$vip['descr']}.";
+			}
+		} else if ($a_vip[$_GET['id']]['mode'] == "carp") {
+			$vipiface = "{$a_vip[$_GET['id']]['interface']}_vip{$a_vip[$_GET['id']]['vhid']}";
+			foreach ($a_vip as $vip) {
+				if ($vipiface == $vip['interface'] && $vip['mode'] == "ipalias") {
+					$input_errors[] = gettext("This entry cannot be deleted because it is still referenced by an IP alias entry with the description") . " {$vip['descr']}.";
 				}
 			}
+		}
 
 		if (!$input_errors) {
-			if (!session_id())
+			if (!session_id()) {
 				session_start();
-
+			}
 			$user = getUserEntry($_SESSION['Username']);
 
 			if (is_array($user) && userHasPrivilege($user, "user-config-readonly")) {
@@ -206,17 +254,17 @@ if ($_GET['act'] == "del") {
 				interface_vip_bring_down($a_vip[$_GET['id']]);
 				unset($a_vip[$_GET['id']]);
 			}
-
-			if (count($config['virtualip']['vip']) == 0)
+			if (count($config['virtualip']['vip']) == 0) {
 				unset($config['virtualip']['vip']);
-
+			}
 			write_config();
 			header("Location: firewall_virtual_ip.php");
 			exit;
 		}
 	}
-} else if ($_GET['changes'] == "mods" && is_numericint($_GET['id']))
+} else if ($_GET['changes'] == "mods" && is_numericint($_GET['id'])) {
 	$id = $_GET['id'];
+}
 
 $types = array('proxyarp' => 'Proxy ARP',
 			   'carp' => 'CARP',

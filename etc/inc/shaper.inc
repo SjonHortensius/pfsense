@@ -1,33 +1,58 @@
 <?php
 /*
 	shaper.inc
-	Copyright (C) 2008 Ermal Luçi
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-	1. Redistributions of source code must retain the above copyright notice,
-	   this list of conditions and the following disclaimer.
-
-	2. Redistributions in binary form must reproduce the above copyright
-	   notice, this list of conditions and the following disclaimer in the
-	   documentation and/or other materials provided with the distribution.
-
-	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
-	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-	AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
-
-	pfSense_BUILDER_BINARIES:	/bin/kill	/sbin/kldload	/bin/rm /bin/ps
-	pfSense_MODULE: shaper
 */
+/* ====================================================================
+ *  Copyright (c)  2004-2015  Electric Sheep Fencing, LLC. All rights reserved. 
+ *  Copyright (c)  2004, 2005 Scott Ullrich
+ *
+ *  Redistribution and use in source and binary forms, with or without modification, 
+ *  are permitted provided that the following conditions are met: 
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in
+ *      the documentation and/or other materials provided with the
+ *      distribution. 
+ *
+ *  3. All advertising materials mentioning features or use of this software 
+ *      must display the following acknowledgment:
+ *      "This product includes software developed by the pfSense Project
+ *       for use in the pfSense software distribution. (http://www.pfsense.org/). 
+ *
+ *  4. The names "pfSense" and "pfSense Project" must not be used to
+ *       endorse or promote products derived from this software without
+ *       prior written permission. For written permission, please contact
+ *       coreteam@pfsense.org.
+ *
+ *  5. Products derived from this software may not be called "pfSense"
+ *      nor may "pfSense" appear in their names without prior written
+ *      permission of the Electric Sheep Fencing, LLC.
+ *
+ *  6. Redistributions of any form whatsoever must retain the following
+ *      acknowledgment:
+ *
+ *  "This product includes software developed by the pfSense Project
+ *  for use in the pfSense software distribution (http://www.pfsense.org/).
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE pfSense PROJECT ``AS IS'' AND ANY
+ *  EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE pfSense PROJECT OR
+ *  ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ *  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ *  OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  ====================================================================
+ *
+ */
 
 /* XXX: needs some reducing on include. */
 /* include all configuration functions. */
@@ -273,7 +298,7 @@ class altq_root_queue {
 	var $link;
 	var $available_bw; /* in b/s */
 
-	/* Accesor functions */
+	/* Accessor functions */
 	function GetAvailableBandwidth() {
 		return $this->available_bw;
 	}
@@ -491,7 +516,7 @@ class altq_root_queue {
 					$myBw = $this->GetAvailableBandwidth() * $queue['bandwidth'] / 100;
 					break;
 				default:
-					$myBw = $queue['bandwidth'] * get_bandwidthtype_scale($queue['bandwdithtype']);
+					$myBw = $queue['bandwidth'] * get_bandwidthtype_scale($queue['bandwidthtype']);
 					break;
 			}
 		}
@@ -525,7 +550,7 @@ class altq_root_queue {
 
 	function &find_parentqueue($interface, $qname) {
 		if ($qname == $interface) {
-			$result =  NULL;
+			$result = NULL;
 		} else if ($this->queues[$qname]) {
 			$result = $this;
 		} else if ($this->GetScheduler() <> "PRIQ") {
@@ -545,7 +570,7 @@ class altq_root_queue {
 		$tree .= "\">" . $shaperIFlist[$this->GetInterface()] . "</a>";
 		if (is_array($this->queues)) {
 			$tree .= "<ul>";
-			foreach ($this->queues as $q)  {
+			foreach ($this->queues as $q) {
 				$tree .= $q->build_tree();
 			}
 			$tree .= "</ul>";
@@ -862,7 +887,7 @@ class priq_queue {
 	/* This is here to help with form building and building rules/lists */
 	var $subqueues = array();
 
-	/* Accesor functions */
+	/* Accessor functions */
 	function GetAvailableBandwidth() {
 		return $this->available_bw;
 	}
@@ -1740,7 +1765,7 @@ class hfsc_queue extends priq_queue {
 		unref_on_altq_queue_list($this->GetQname());
 		cleanup_queue_from_rules($this->GetQname());
 		$parent =& $this->GetParent();
-		foreach ($this->subqueues as $q)  {
+		foreach ($this->subqueues as $q) {
 			$this->SetAvailableBandwidth($this->GetAvailableBandwidth() + $q->GetAvailableBandwidth());
 				$q->delete_queue();
 		}
@@ -1814,10 +1839,10 @@ class hfsc_queue extends priq_queue {
 		*/
 		}
 
-		if ($data['upperlimit1'] <> "" &&  $data['upperlimit2'] == "") {
+		if ($data['upperlimit1'] <> "" && $data['upperlimit2'] == "") {
 			$input_errors[] = gettext("upperlimit service curve defined but missing (d) value");
 		}
-		if ($data['upperlimit2'] <> "" &&  $data['upperlimit1'] == "") {
+		if ($data['upperlimit2'] <> "" && $data['upperlimit1'] == "") {
 			$input_errors[] = gettext("upperlimit service curve defined but missing initial bandwidth (m1) value");
 		}
 		if ($data['upperlimit1'] <> "" && !is_valid_shaperbw($data['upperlimit1'])) {
@@ -1843,10 +1868,10 @@ class hfsc_queue extends priq_queue {
 			}
 		}
 		*/
-		if ($data['linkshare1'] <> "" &&  $data['linkshare2'] == "") {
+		if ($data['linkshare1'] <> "" && $data['linkshare2'] == "") {
 			$input_errors[] = gettext("linkshare service curve defined but missing (d) value");
 		}
-		if ($data['linkshare2'] <> "" &&  $data['linkshare1'] == "") {
+		if ($data['linkshare2'] <> "" && $data['linkshare1'] == "") {
 			$input_errors[] = gettext("linkshare service curve defined but missing initial bandwidth (m1) value");
 		}
 		if ($data['linkshare1'] <> "" && !is_valid_shaperbw($data['linkshare1'])) {
@@ -1858,10 +1883,10 @@ class hfsc_queue extends priq_queue {
 		if ($data['linkshare3'] <> "" && !is_valid_shaperbw($data['linkshare3'])) {
 			$input_errors[] = gettext("linkshare m2 value needs to be Kb, Mb, Gb, or %");
 		}
-		if ($data['realtime1'] <> "" &&	 $data['realtime2'] == "") {
+		if ($data['realtime1'] <> "" && $data['realtime2'] == "") {
 			$input_errors[] = gettext("realtime service curve defined but missing (d) value");
 		}
-		if ($data['realtime2'] <> "" &&	 $data['realtime1'] == "") {
+		if ($data['realtime2'] <> "" && $data['realtime1'] == "") {
 			$input_errors[] = gettext("realtime service curve defined but missing initial bandwidth (m1) value");
 		}
 
@@ -1969,7 +1994,7 @@ class hfsc_queue extends priq_queue {
 		$tree .= " >" . $this->GetQname() . "</a>";
 		if (is_array($this->subqueues)) {
 			$tree .= "<ul>";
-			foreach ($this->subqueues as $q)  {
+			foreach ($this->subqueues as $q) {
 				$tree .= $q->build_tree();
 			}
 			$tree .= "</ul>";
@@ -2035,13 +2060,13 @@ class hfsc_queue extends priq_queue {
 				$default = true;
 			}
 
-			if ($this->GetRealtime() <> "")	 {
+			if ($this->GetRealtime() <> "") {
 				if ($comma) {
 					$pfq_rule .= " , ";
 				}
-				if ($this->GetR_m1()  <> "" && $this->GetR_d() <> "" && $this->GetR_m2() <> "") {
+				if ($this->GetR_m1() <> "" && $this->GetR_d() <> "" && $this->GetR_m2() <> "") {
 					$pfq_rule .= " realtime (".$this->GetR_m1() . ", " . $this->GetR_d().", ". $this->GetR_m2() .") ";
-				} else	if ($this->GetR_m2() <> "") {
+				} else if ($this->GetR_m2() <> "") {
 					$pfq_rule .= " realtime " . $this->GetR_m2();
 				}
 				$comma = 1;
@@ -2611,7 +2636,7 @@ class cbq_queue extends priq_queue {
 		$tree .= " >" . $this->GetQname() . "</a>";
 		if (is_array($this->subqueues)) {
 			$tree .= "<ul>";
-			foreach ($this->subqueues as $q)  {
+			foreach ($this->subqueues as $q) {
 				$tree .= $q->build_tree();
 			}
 			$tree .= "</ul>";
@@ -3038,13 +3063,13 @@ class fairq_queue extends priq_queue {
 		$form .= "<input id=\"buckets\" name=\"buckets\" value=\"";
 		$tmpvalue = trim($this->GetBuckets());
 		if (!empty($tmpvalue)) {
-			$form .=  $this->GetBuckets();
+			$form .= $this->GetBuckets();
 		}
 		$form .= "\" /> " . gettext("Number of buckets available.") . "<br /></td></tr>";
 		$form .= "<tr><td class=\"vtable\"><input id=\"hogs\" name=\"hogs\" value=\"";
 		$tmpvalue = trim($this->GetHogs());
 		if (!empty($tmpvalue)) {
-			$form .=  $this->GetHogs();
+			$form .= $this->GetHogs();
 		}
 		$form .= "\" /> " . gettext("Bandwidth limit for hosts to not saturate link.") . "<br /></td></tr>";
 		$form .= "</table></td></tr>";
@@ -3530,7 +3555,7 @@ class dnpipe_class extends dummynet_class {
 		$tree .= $this->GetQname() . "</a>";
 		if (is_array($this->subqueues)) {
 			$tree .= "<ul>";
-			foreach ($this->subqueues as $q)  {
+			foreach ($this->subqueues as $q) {
 				$tree .= $q->build_tree();
 			}
 			$tree .= "</ul>";
@@ -3674,7 +3699,7 @@ EOD;
 	}
 
 	// Compose a table of bandwidths that can then be inserted into the form using a Form_StaticText
-	// THe table has been "Bootstrapped" to match the we b design while maintaining compatibility with
+	// The table has been "Bootstrapped" to match the web design while maintaining compatibility with
 	// with the javascript in this class
 	function build_bwtable() {
 		global $config;
@@ -3685,54 +3710,70 @@ EOD;
 		$schedules[] = "none";//leave none to leave rule enabled all the time
 		if (is_array($config['schedules']) && is_array($config['schedules']['schedule'])) {
 			foreach ($config['schedules']['schedule'] as $schedule) {
-				if ($schedule['name'] <> "") {
+				if ($schedule['name'] != "") {
 					$schedules[] = $schedule['name'];
 				}
 			}
 		}
 
-		$form = '<table id="maintable" class="table table-hover table-condensed">';
+		$form = '<div class="table-responsive">';
+		$form .= '<table id="maintable" class="table table-hover table-striped">';
 		$form .= "<thead><tr>";
-		$form .= "<th><div id='onecolumn'>Bandwidth</div></th>";
+		$form .= "<th>Bandwidth</th>";
 		//$form .= "<td width='35%'><div id='fifthcolumn'>Burst</div></td>";
-		$form .= "<th><div id='twocolumn'>Bw type</div></th>";
-		$form .= "<th><div id='thirdcolumn'>Schedule</div></th>";
-		$form .= "<th><div id='fourthcolumn'></div></th>";
+		$form .= "<th>Bw type</th>";
+		$form .= "<th>Schedule</th>";
+		$form .= "<th></th>";
 		$form .= "</tr></thead>";
 		$form .= "<tbody>";
 
+		// If there are no bandwidths defined, make a blank one for convenience
+		if(empty($bandwidth))
+			$bandwidth = array(0 => array('bw' => '', 'bwscale' => 'Kb', 'bwsched' => 'none'));
+			
 		if (is_array($bandwidth)) {
 			foreach ($bandwidth as $bwidx => $bw) {
-				$form .= '<tr><td>';
-				$form .= "<input class='form-control' type=\"text\" id=\"bandwidth{$bwidx}\" name=\"bandwidth{$bwidx}\" value=\"{$bw['bw']}\" />";
+				$form .= '<tr>';
+				$form .= '<td class="col-xs-4">';
+				$form .= "<input class='form-control' type=\"number\" id=\"bandwidth{$bwidx}\" name=\"bandwidth{$bwidx}\" value=\"{$bw['bw']}\" />";
 				//$form .= "</td><td width='20%'>";
 				//$form .= "<input class='formfld unknown' size='10' type=\"text\" id=\"burst{$bwidx}\" name=\"burst{$bwidx}\" value=\"{$bw['burst']}\" />";
-				$form .= "</td><td>";
+				$form .= "</td>";
+				$form .= '<td class="col-xs-4">';
 				$form .= "<select id=\"bwtype{$bwidx}\" name=\"bwtype{$bwidx}\" class=\"form-control\">";
+				
 				foreach (array("Kb" => "Kbit/s", "Mb" => "Mbit/s", "Gb" => "Gbit/s", "b" => "Bit/s") as $bwsidx => $bwscale) {
 					$form .= "<option value=\"{$bwsidx}\"";
+					
 					if ($bw['bwscale'] == $bwsidx) {
 						$form .= " selected=\"selected\"";
 					}
+					
 					$form .= ">{$bwscale}</option>";
 				}
+				
 				$form .= "</select>";
-				$form .= "</td><td>";
+				$form .= "</td>";
+				$form .= '<td class="col-xs-4">';
 				$form .= "<select id=\"bwsched{$bwidx}\" name=\"bwsched{$bwidx}\" class=\"form-control\">";
+				
 				foreach ($schedules as $schd) {
 					$selected = "";
 					if ($bw['bwsched'] == $schd) {
 						$selected = "selected=\"selected\"";
 					}
+					
 					$form .= "<option value='{$schd}' {$selected}>{$schd}</option>";
 				}
+				
 				$form .= "</select>";
-				$form .= "</td><td>";
+				$form .= "</td>";
+				$form .= '<td>';
 				$form .= '<a type="button" class="btn btn-default" onclick="removeBwRow(this); return false;">' . gettext('Remove') . '</a>';
 				$form .= "</td></tr>";
 			}
 		}
-		$form .= "</tbody></table>";
+		$form .= "</tbody></table></div><br />";
 
 		$form .= '<a type="button" class="btn btn-sm btn-success" onclick="javascript:addBwRowTo(\'maintable\'); return false;" >';
 		$form .= gettext("Add another schedule") . "</a>";
@@ -3793,17 +3834,16 @@ EOD;
 		$bandwidth = $this->GetBandwidth();
 
 		// Delete a row
-		if(isset($_GET['delbwrow']) && (count($bandwidth) > 0))
-			unset($bandwidth[$_GET['delbwrow']]);
+//		if(isset($_GET['delbwrow']) && (count($bandwidth) > 0))
+//			unset($bandwidth[$_GET['delbwrow']]);
 
 		// Add a row
-		if($_GET['newbwrow']) {
-			array_push($bandwidth, array(count($bandwidth) => array('bw' => '', 'burst' => '', 'bwscale' => 'Kb', 'bwsched' => 'none') ));
-
-		}
-
+//		if($_GET['newbwrow']) {
+//			array_push($bandwidth, array(count($bandwidth) => array('bw' => '', 'burst' => '', 'bwscale' => 'Kb', 'bwsched' => 'none') ));
+//		}
+		
 		if (is_array($bandwidth)) {
-			$section->addInput(new Form_StaticText(
+				$section->addInput(new Form_StaticText(
 				'Bandwidth',
 				$this->build_bwtable()
 			));
@@ -3851,9 +3891,9 @@ EOD;
 
 		$section->addInput(new Form_Input(
 			'delay',
-			'Delay (mS)',
-			'number',
-			$this->GetDelay()
+			'Delay (ms)',
+			'text',
+			$this->GetDelay() > 0 ? $this->GetDelay():null
 		))->setHelp('In most cases, you should specify 0 here (or leave the field empty)');
 
 		$section->addInput(new Form_Input(
@@ -4622,7 +4662,7 @@ function read_layer7_config() {
 			continue; /* XXX: grrrrrr at php */
 		}
 		$root =& new layer7();
-		$root->ReadConfig($conf['name'],$conf);
+		$root->ReadConfig($conf['name'], $conf);
 		$layer7_rules_list[$root->GetRName()] = &$root;
 	}
 }
@@ -4663,8 +4703,8 @@ function generate_layer7_files() {
 
 			$rules = $l7rules->build_l7_rules();
 
-			$fp = fopen($path,'w');
-			fwrite($fp,$rules);
+			$fp = fopen($path, 'w');
+			fwrite($fp, $rules);
 			fclose($fp);
 		}
 	}
@@ -4955,7 +4995,7 @@ function get_interface_list_to_show() {
 	foreach ($shaperIFlist as $shif => $shDescr) {
 		if ($altq_list_queues[$shif]) {
 			continue;
-		} else	{
+		} else {
 			if (!is_altq_capable(get_real_interface($shif))) {
 				continue;
 			}

@@ -29,7 +29,7 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 /*
-	pfSense_MODULE: system
+	pfSense_MODULE:	system
 */
 
 ##|+PRIV
