@@ -230,7 +230,7 @@ if (isset($_POST['submit'])) {
 			$numbervalue = array();
 			$numbervalue['number'] = htmlspecialchars($_POST["number{$x}"]);
 			$numbervalue['type'] = htmlspecialchars($_POST["itemtype{$x}"]);
-			$numbervalue['value'] = str_replace('&quot;', '"', htmlspecialchars($_POST["value{$x}"]));
+			$numbervalue['value'] = base64_encode($_POST["value{$x}"]);
 			$numberoptions['item'][] = $numbervalue;
 		}
 	}
@@ -374,25 +374,26 @@ if (isset($_POST['submit'])) {
 
 		if (is_array($pconfig['numberoptions']['item'])) {
 			foreach ($pconfig['numberoptions']['item'] as $numberoption) {
-				if ($numberoption['type'] == 'text' && strstr($numberoption['value'], '"')) {
+				$numberoption_value = base64_decode($numberoption['value']);
+				if ($numberoption['type'] == 'text' && strstr($numberoption_value, '"')) {
 					$input_errors[] = gettext("Text type cannot include quotation marks.");
-				} else if ($numberoption['type'] == 'string' && !preg_match('/^"[^"]*"$/', $numberoption['value']) && !preg_match('/^[0-9a-f]{2}(?:\:[0-9a-f]{2})*$/i', $numberoption['value'])) {
+				} else if ($numberoption['type'] == 'string' && !preg_match('/^"[^"]*"$/', $numberoption_value) && !preg_match('/^[0-9a-f]{2}(?:\:[0-9a-f]{2})*$/i', $numberoption_value)) {
 					$input_errors[] = gettext("String type must be enclosed in quotes like \"this\" or must be a series of octets specified in hexadecimal, separated by colons, like 01:23:45:67:89:ab:cd:ef");
-				} else if ($numberoption['type'] == 'boolean' && $numberoption['value'] != 'true' && $numberoption['value'] != 'false' && $numberoption['value'] != 'on' && $numberoption['value'] != 'off') {
+				} else if ($numberoption['type'] == 'boolean' && $numberoption_value != 'true' && $numberoption_value != 'false' && $numberoption_value != 'on' && $numberoption_value != 'off') {
 					$input_errors[] = gettext("Boolean type must be true, false, on, or off.");
-				} else if ($numberoption['type'] == 'unsigned integer 8' && (!is_numeric($numberoption['value']) || $numberoption['value'] < 0 || $numberoption['value'] > 255)) {
+				} else if ($numberoption['type'] == 'unsigned integer 8' && (!is_numeric($numberoption_value) || $numberoption_value < 0 || $numberoption_value > 255)) {
 					$input_errors[] = gettext("Unsigned 8-bit integer type must be a number in the range 0 to 255.");
-				} else if ($numberoption['type'] == 'unsigned integer 16' && (!is_numeric($numberoption['value']) || $numberoption['value'] < 0 || $numberoption['value'] > 65535)) {
+				} else if ($numberoption['type'] == 'unsigned integer 16' && (!is_numeric($numberoption_value) || $numberoption_value < 0 || $numberoption_value > 65535)) {
 					$input_errors[] = gettext("Unsigned 16-bit integer type must be a number in the range 0 to 65535.");
-				} else if ($numberoption['type'] == 'unsigned integer 32' && (!is_numeric($numberoption['value']) || $numberoption['value'] < 0 || $numberoption['value'] > 4294967295)) {
+				} else if ($numberoption['type'] == 'unsigned integer 32' && (!is_numeric($numberoption_value) || $numberoption_value < 0 || $numberoption_value > 4294967295)) {
 					$input_errors[] = gettext("Unsigned 32-bit integer type must be a number in the range 0 to 4294967295.");
-				} else if ($numberoption['type'] == 'signed integer 8' && (!is_numeric($numberoption['value']) || $numberoption['value'] < -128 || $numberoption['value'] > 127)) {
+				} else if ($numberoption['type'] == 'signed integer 8' && (!is_numeric($numberoption_value) || $numberoption_value < -128 || $numberoption_value > 127)) {
 					$input_errors[] = gettext("Signed 8-bit integer type must be a number in the range -128 to 127.");
-				} else if ($numberoption['type'] == 'signed integer 16' && (!is_numeric($numberoption['value']) || $numberoption['value'] < -32768 || $numberoption['value'] > 32767)) {
+				} else if ($numberoption['type'] == 'signed integer 16' && (!is_numeric($numberoption_value) || $numberoption_value < -32768 || $numberoption_value > 32767)) {
 					$input_errors[] = gettext("Signed 16-bit integer type must be a number in the range -32768 to 32767.");
-				} else if ($numberoption['type'] == 'signed integer 32' && (!is_numeric($numberoption['value']) || $numberoption['value'] < -2147483648 || $numberoption['value'] > 2147483647)) {
+				} else if ($numberoption['type'] == 'signed integer 32' && (!is_numeric($numberoption_value) || $numberoption_value < -2147483648 || $numberoption_value > 2147483647)) {
 					$input_errors[] = gettext("Signed 32-bit integer type must be a number in the range -2147483648 to 2147483647.");
-				} else if ($numberoption['type'] == 'ip-address' && !is_ipaddrv4($numberoption['value']) && !is_hostname($numberoption['value'])) {
+				} else if ($numberoption['type'] == 'ip-address' && !is_ipaddrv4($numberoption_value) && !is_hostname($numberoption_value)) {
 					$input_errors[] = gettext("IP address or host type must be an IP address or host name.");
 				}
 			}
@@ -937,7 +938,7 @@ if (!is_numeric($pool) && !($act == "newpool")) {
 		'failover_peerip',
 		'Failover peer IP',
 		$pconfig['failover_peerip']
-	))->setHelp('Leave blank to disable. Enter the interface IP address of the other machine. Machines must be using CARP.' .
+	))->setHelp('Leave blank to disable. Enter the interface IP address of the other machine. Machines must be using CARP. ' .
 				'Interface\'s advskew determines whether the DHCPd process is Primary or Secondary. Ensure one machine\'s advskew &lt; 20 (and the other is &gt; 20).');
 }
 
@@ -970,7 +971,7 @@ $btnadv = new Form_Button(
 	'Advanced'
 );
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
+$btnadv->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Dynamic DNS',
@@ -1018,7 +1019,7 @@ $btnadv = new Form_Button(
 	'Advanced'
 );
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
+$btnadv->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'MAC address control',
@@ -1027,14 +1028,14 @@ $section->addInput(new Form_StaticText(
 
 $section->addInput(new Form_Input(
 	'mac_allow',
-	'Allow',
+	'MAC Allow',
 	'text',
 	$pconfig['mac_allow']
 ))->setHelp('List of partial MAC addresses to allow, comma separated, no spaces, e.g.: 00:00:00,01:E5:FF');
 
 $section->addInput(new Form_Input(
 	'mac_deny',
-	'Deny',
+	'MAC Deny',
 	'text',
 	$pconfig['mac_deny']
 ))->setHelp('List of partial MAC addresses to deny access, comma separated, no spaces, e.g.: 00:00:00,01:E5:FF');
@@ -1045,24 +1046,24 @@ $btnadv = new Form_Button(
 	'Advanced'
 );
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
+$btnadv->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
-	'NTP servers',
+	'NTP',
 	$btnadv
 ));
 
 $section->addInput(new Form_IpAddress(
 	'ntp1',
-	null,
+	'NTP Server 1',
 	$pconfig['ntp1']
-))->setAttribute('placeholder', 'NTP Server 1');
+));
 
 $section->addInput(new Form_IpAddress(
 	'ntp2',
-	null,
+	'NTP Server 2',
 	$pconfig['ntp2']
-))->setAttribute('placeholder', 'NTP Server 2');
+));
 
 // Advanced TFTP
 $btnadv = new Form_Button(
@@ -1070,16 +1071,16 @@ $btnadv = new Form_Button(
 	'Advanced'
 );
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
+$btnadv->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
-	'TFTP server',
+	'TFTP',
 	$btnadv
 ));
 
 $section->addInput(new Form_IpAddress(
 	'tftp',
-	null,
+	'TFTP Server',
 	$pconfig['tftp']
 ))->setHelp('Leave blank to disable.  Enter a full hostname or IP for the TFTP server')->setPattern('[.a-zA-Z0-9_]+');
 
@@ -1089,36 +1090,32 @@ $btnadv = new Form_Button(
 	'Advanced'
 );
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
+$btnadv->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
-	'LDAP URI',
+	'LDAP',
 	$btnadv
 ));
 
 $section->addInput(new Form_Input(
 	'ldap',
-	null,
+	'LDAP Server URI',
 	'text',
 	$pconfig['ldap']
 ))->setHelp('Leave blank to disable. Enter a full URI for the LDAP server in the form ldap://ldap.example.com/dc=example,dc=com ');
 
-// Advanced NETBOOT
-$btnadv = new Form_Button(
-	'btnadvboot',
-	'Advanced'
-);
+$form->add($section);
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
-
-$section->addInput(new Form_StaticText(
-	'Network booting',
-	$btnadv
-));
+if ($pconfig['netboot']) {
+	$sectate = COLLAPSIBLE|SEC_OPEN;
+} else {
+	$sectate = COLLAPSIBLE|SEC_CLOSED;
+}
+$section = new Form_Section("Network booting", nwkbootsec, $sectate);
 
 $section->addInput(new Form_Checkbox(
 	'netboot',
-	null,
+	'Enable',
 	'Enables network booting',
 	$pconfig['netboot']
 ));
@@ -1164,7 +1161,7 @@ $btnadv = new Form_Button(
 	'Advanced'
 );
 
-$btnadv->removeClass('btn-primary')->addClass('btn-default btn-sm');
+$btnadv->removeClass('btn-primary')->addClass('btn-info btn-sm');
 
 $section->addInput(new Form_StaticText(
 	'Additional BOOTP/DHCP Options',
@@ -1200,7 +1197,7 @@ $numrows = count($pconfig['numberoptions']['item']) -1;
 foreach ($pconfig['numberoptions']['item'] as $item) {
 	$number = $item['number'];
 	$itemtype = $item['type'];
-	$value = $item['value'];
+	$value = base64_decode($item['value']);
 
 	$group = new Form_Group(($counter == 0) ? 'Option':null);
 	$group->addClass('repeatable');
@@ -1391,7 +1388,6 @@ events.push(function() {
 
 		hideInput('mac_allow', !showadvmac && !hide);
 		hideInput('mac_deny', !showadvmac && !hide);
-		hideInput('btnadvmac', hide);
 
 		showadvmac = !showadvmac;
 	}
@@ -1399,7 +1395,7 @@ events.push(function() {
 	$('#btnadvmac').prop('type', 'button');
 
 	$('#btnadvmac').click(function(event) {
-		show_advmac();
+		show_advmac(true);
 	});
 
   // Show advanced NTP options ======================================================================================
@@ -1429,7 +1425,7 @@ events.push(function() {
 	});
 
    // Show advanced TFTP options ======================================================================================
-	var showadvtftp = false;
+	var showtftp = false;
 
 	function show_advtftp() {
 <?php
@@ -1441,10 +1437,9 @@ events.push(function() {
 ?>
 		var hide = <?php if ($hide) {echo 'true';} else {echo 'false';} ?>;
 
-		hideInput('tftp', !showadvtftp && !hide);
-		hideInput('btnadvtftp', hide);
+		hideInput('tftp', !showtftp & !hide);
 
-		showadvtftp = !showadvtftp;
+		showtftp = !showtftp;
 	}
 
 	$('#btnadvtftp').prop('type', 'button');
@@ -1476,37 +1471,6 @@ events.push(function() {
 
 	$('#btnadvldap').click(function(event) {
 		show_advldap();
-	});
-
-   // Show advanced NETBOOT options ===================================================================================
-	var showadvboot = false;
-
-	function show_advboot() {
-<?php
-		if (!$pconfig['netboot'] && empty($pconfig['nextserver']) && empty($pconfig['filename']) && empty($pconfig['filename32']) &&
-		    empty($pconfig['filename64']) && empty($pconfig['rootpath'])) {
-			$hide = false;
-		} else {
-			$hide = true;
-		}
-?>
-		var hide = <?php if ($hide) {echo 'true';} else {echo 'false';} ?>;
-
-		hideCheckbox('netboot', !showadvboot && !hide);
-		hideInput('nextserver', !showadvboot && !hide);
-		hideInput('filename', !showadvboot && !hide);
-		hideInput('filename32', !showadvboot && !hide);
-		hideInput('filename64', !showadvboot && !hide);
-		hideInput('rootpath', !showadvboot && !hide);
-		hideInput('btnadvboot', hide);
-
-		showadvboot = !showadvboot;
-	}
-
-	$('#btnadvboot').prop('type', 'button');
-
-	$('#btnadvboot').click(function(event) {
-		show_advboot();
 	});
 
 	// Show advanced additional opts options ===========================================================================
@@ -1542,7 +1506,6 @@ events.push(function() {
 	show_advntp();
 	show_advtftp();
 	show_advldap();
-	show_advboot();
 	show_advopts();
 
 	// Suppress "Delete row" button if there are fewer than two rows

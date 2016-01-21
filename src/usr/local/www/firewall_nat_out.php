@@ -244,7 +244,8 @@ if ($savemsg) {
 }
 
 if (is_subsystem_dirty('natconf')) {
-	print_info_box_np(gettext("The NAT configuration has been changed.")."<br />".gettext("You must apply the changes in order for them to take effect."));
+	print_info_box_np(gettext('The NAT configuration has been changed.') . '<br />' .
+					  gettext('You must apply the changes in order for them to take effect.'));
 }
 
 $tab_array = array();
@@ -353,7 +354,7 @@ print($form);
 				else:
 ?>
 							<a href="?act=toggle&amp;id=<?=$i?>">
-								<i class="fa <?= ($iconfn == "pass") ? "fa-check":"fa-hidden"?>" title="<?=gettext("Click to toggle enabled/disabled status")?>"></i>
+								<i class="fa <?= ($iconfn == "pass") ? "fa-check":"fa-times"?>" title="<?=gettext("Click to toggle enabled/disabled status")?>"></i>
 							</a>
 
 <?php
@@ -529,7 +530,7 @@ print($form);
 			<i class="fa fa-trash icon-embed-btn"></i>
 			<?=gettext("Delete"); ?>
 		</button>
-		<button type="submit" id="order-store" class="btn btn-primary btn-sm" value="Save changes" disabled name="order-store" title="<?=gettext('Save map order')?>">
+		<button type="submit" id="order-store" class="btn btn-primary btn-sm" value="Save changes" disabled name="order-store" title="<?=gettext('Save mapping order')?>">
 			<i class="fa fa-save icon-embed-btn"></i>
 			<?=gettext("Save")?>
 		</button>

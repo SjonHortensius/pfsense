@@ -274,10 +274,21 @@ function renumber() {
 	});
 }
 
-function delete_row(row) {
-	$('#' + row).parent('div').parent('div').remove();
+function delete_row(rowDelBtn) {
+	var rowLabel;
+
+	// If we are deleting row zero, we need to save/restore the label
+	if (rowDelBtn == "deleterow0") {
+		rowLabel = $('#' + rowDelBtn).parent('div').parent('div').find('label').text();
+	}
+
+	$('#' + rowDelBtn).parent('div').parent('div').remove();
 	renumber();
 	checkLastRow();
+
+	if (rowDelBtn == "deleterow0") {
+		$('#' + rowDelBtn).parent('div').parent('div').find('label').text(rowLabel);
+	}
 }
 
 function checkLastRow() {

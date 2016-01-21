@@ -164,6 +164,19 @@ if (isset($_POST['del_x'])) {
 		header("Location: firewall_nat.php");
 		exit;
 	}
+} else if ($_GET['act'] == "toggle") {
+	if ($a_nat[$_GET['id']]) {
+		if (isset($a_nat[$_GET['id']]['disabled'])) {
+			unset($a_nat[$_GET['id']]['disabled']);
+		} else {
+			$a_nat[$_GET['id']]['disabled'] = true;
+		}
+		if (write_config(gettext("Firewall: NAT: Port forward, enable/disable NAT rule"))) {
+			mark_subsystem_dirty('natconf');
+		}
+		header("Location: firewall_nat.php");
+		exit;
+	}
 }
 
 $pgtitle = array(gettext("Firewall"), gettext("NAT"), gettext("Port Forward"));
@@ -175,7 +188,7 @@ if ($savemsg) {
 
 if (is_subsystem_dirty('natconf')) {
 	print_info_box_np(gettext('The NAT configuration has been changed.') . '<br />' .
-					  gettext('You must apply the changes in order for them to take effect.') . '<br />');
+					  gettext('You must apply the changes in order for them to take effect.'));
 }
 
 $tab_array = array();
@@ -194,6 +207,7 @@ display_top_tabs($tab_array);
 				<thead>
 					<tr>
 						<th><!-- Checkbox --></th>
+						<th><!-- Icon --></th>
 						<th><!-- Rule type --></th>
 						<th><?=gettext("Interface")?></th>
 						<th><?=gettext("Protocol")?></th>
@@ -225,11 +239,24 @@ foreach ($a_nat as $natent):
 	if (!have_natpfruleint_access($natent['interface'])) {
 		continue;
 	}
+
+	if (isset($natent['disabled'])) {
+		$iconfn = "pass_d";
+		$trclass = 'class="disabled"';
+	} else {
+		$iconfn = "pass";
+		$trclass = '';
+	}
 ?>
 
-					<tr id="fr<?=$nnats;?>" onClick="fr_toggle(<?=$nnats;?>)" ondblclick="document.location='firewall_nat_edit.php?id=<?=$i;?>';">
+					<tr id="fr<?=$nnats;?>" <?=$trclass?> onClick="fr_toggle(<?=$nnats;?>)" ondblclick="document.location='firewall_nat_edit.php?id=<?=$i;?>';">
 						<td >
 							<input type="checkbox" id="frc<?=$nnats;?>" onClick="fr_toggle(<?=$nnats;?>)" name="rule[]" value="<?=$i;?>"/>
+						</td>
+						<td>
+							<a href="?act=toggle&amp;id=<?=$i?>">
+								<i class="fa <?= ($iconfn == "pass") ? "fa-check":"fa-times"?>" title="<?=gettext("click to toggle enabled/disabled status")?>"></i>
+							</a>
 						</td>
 						<td>
 <?php
@@ -239,7 +266,7 @@ foreach ($a_nat as $natent):
 <?php
 	elseif (!empty($natent['associated-rule-id'])):
 ?>
-							<i class="fa fa-random" title="<?=gettext("Firewall rule ID ")?><?=htmlspecialchars($natent['associated-rule-id'])?> . <?=gettext('is managed by this rule')?>"></i>
+							<i class="fa fa-random" title="<?=sprintf(gettext("Firewall rule ID %s is managed by this rule"), htmlspecialchars($natent['associated-rule-id']))?>"></i>
 <?php
 	endif;
 ?>
@@ -266,7 +293,7 @@ foreach ($a_nat as $natent):
 <?php
 	if (isset($alias['src'])):
 ?>
-							<a href="/firewall_aliases_edit.php?id=<?=$alias['src']?>" data-toggle="popover" data-trigger="hover focus" title="Alias details" data-content="<?=alias_info_popup($alias['src'])?>" data-html="true">
+							<a href="/firewall_aliases_edit.php?id=<?=$alias['src']?>" data-toggle="popover" data-trigger="hover focus" title="<?=gettext('Alias details')?>" data-content="<?=alias_info_popup($alias['src'])?>" data-html="true">
 <?php
 	endif;
 ?>
@@ -283,7 +310,7 @@ foreach ($a_nat as $natent):
 <?php
 	if (isset($alias['srcport'])):
 ?>
-							<a href="/firewall_aliases_edit.php?id=<?=$alias['srcport']?>" data-toggle="popover" data-trigger="hover focus" title="Alias details" data-content="<?=alias_info_popup($alias['srcport'])?>" data-html="true">
+							<a href="/firewall_aliases_edit.php?id=<?=$alias['srcport']?>" data-toggle="popover" data-trigger="hover focus" title="<?=gettext('Alias details')?>" data-content="<?=alias_info_popup($alias['srcport'])?>" data-html="true">
 <?php
 	endif;
 ?>
@@ -301,7 +328,7 @@ foreach ($a_nat as $natent):
 <?php
 	if (isset($alias['dst'])):
 ?>
-							<a href="/firewall_aliases_edit.php?id=<?=$alias['dst']?>" data-toggle="popover" data-trigger="hover focus" title="Alias details" data-content="<?=alias_info_popup($alias['dst'])?>" data-html="true">
+							<a href="/firewall_aliases_edit.php?id=<?=$alias['dst']?>" data-toggle="popover" data-trigger="hover focus" title="<?=gettext('Alias details')?>" data-content="<?=alias_info_popup($alias['dst'])?>" data-html="true">
 <?php
 	endif;
 ?>
@@ -318,7 +345,7 @@ foreach ($a_nat as $natent):
 <?php
 	if (isset($alias['dstport'])):
 ?>
-							<a href="/firewall_aliases_edit.php?id=<?=$alias['dstport']?>" data-toggle="popover" data-trigger="hover focus" title="Alias details" data-content="<?=alias_info_popup($alias['dstport'])?>" data-html="true">
+							<a href="/firewall_aliases_edit.php?id=<?=$alias['dstport']?>" data-toggle="popover" data-trigger="hover focus" title="<?=gettext('Alias details')?>" data-content="<?=alias_info_popup($alias['dstport'])?>" data-html="true">
 <?php
 	endif;
 ?>

@@ -69,9 +69,9 @@ if ($_POST['action']) {
 	switch ($_POST['action']) {
 		case 'load':
 			if (strlen($_POST['file']) < 1) {
-				print('|5|' . '<div class="alert alert-danger" role="alert">'.gettext("No file name specified").'</div>' . '|');
+				print('|5|' . '<div class="alert alert-danger" role="alert">' . gettext("No file name specified") . '</div>' . '|');
 			} elseif (is_dir($_POST['file'])) {
-				print('|4|' . '<div class="alert alert-danger" role="alert">' . gettext("Loading a directory is not supported") .'</div>' . '|');
+				print('|4|' . '<div class="alert alert-danger" role="alert">' . gettext("Loading a directory is not supported") . '</div>' . '|');
 			} elseif (!is_file($_POST['file'])) {
 				print('|3|' . '<div class="alert alert-danger" role="alert">' . gettext("File does not exist or is not a regular file") . '</div>' . '|');
 			} else {
@@ -87,7 +87,7 @@ if ($_POST['action']) {
 
 		case 'save':
 			if (strlen($_POST['file']) < 1) {
-				print('|' . '<div class="alert alert-danger" role="alert">'.gettext("No file name specified").'</div>' . '|');
+				print('|' . '<div class="alert alert-danger" role="alert">' . gettext("No file name specified") . '</div>' . '|');
 			} else {
 				conf_mount_rw();
 				$_POST['data'] = str_replace("\r", "", base64_decode($_POST['data']));
@@ -116,7 +116,7 @@ require("head.inc");
 ?>
 <!-- file status box -->
 <div style="display:none; background:#eeeeee;" id="fileStatusBox">
-		<strong id="fileStatus"></strong>
+	<strong id="fileStatus"></strong>
 </div>
 
 <div class="panel panel-default">
@@ -128,6 +128,9 @@ require("head.inc");
 				<input type="button" class="btn btn-default btn-sm"	  onclick="loadFile();" value="<?=gettext('Load')?>" />
 				<input type="button" class="btn btn-default btn-sm"	  id="fbOpen"		   value="<?=gettext('Browse')?>" />
 				<input type="button" class="btn btn-default btn-sm"	  onclick="saveFile();" value="<?=gettext('Save')?>" />
+				<span class="pull-right">
+					<button id="btngoto" class="btn btn-default btn-sm"><?=gettext("GoTo Line #")?></button> <input type="number" id="gotoline" width="6"></input>
+				</span>
 			</form>
 
 			<div id="fbBrowser" style="display:none; border:1px dashed gray; width:98%;"></div>
@@ -148,6 +151,58 @@ require("head.inc");
 
 <script type="text/javascript">
 //<![CDATA[
+	events.push(function(){
+
+		function showLine(tarea, lineNum) {
+
+			lineNum--; // array starts at 0
+			var lines = tarea.value.split("\n");
+
+			// calculate start/end
+			var startPos = 0, endPos = tarea.value.length;
+			for(var x = 0; x < lines.length; x++) {
+				if(x == lineNum) {
+					break;
+				}
+				startPos += (lines[x].length+1);
+
+			}
+
+			var endPos = lines[lineNum].length+startPos;
+
+			// do selection
+			// Chrome / Firefox
+
+			if(typeof(tarea.selectionStart) != "undefined") {
+				tarea.focus();
+				tarea.selectionStart = startPos;
+				tarea.selectionEnd = endPos;
+				return true;
+			}
+
+			// IE
+			if (document.selection && document.selection.createRange) {
+				tarea.focus();
+				tarea.select();
+				var range = document.selection.createRange();
+				range.collapse(true);
+				range.moveEnd("character", endPos);
+				range.moveStart("character", startPos);
+				range.select();
+				return true;
+			}
+
+			return false;
+		}
+
+		$("#btngoto").prop('type','button');
+
+		$('#btngoto').click(function() {
+			var tarea = document.getElementById("fileContent");
+			showLine(tarea, $('#gotoline').val());
+		});
+	});
+
 	function loadFile() {
 		jQuery("#fileStatus").html("");
 		jQuery("#fileStatusBox").show(500);

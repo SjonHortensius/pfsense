@@ -1083,10 +1083,10 @@ list($host) = explode(":", $_SERVER['HTTP_HOST']);
 $zoneid = $pconfig['zoneid'] ? $pconfig['zoneid'] : 8000;
 if ($pconfig['httpslogin_enable']) {
 	$port = $pconfig['listenporthttps'] ? $pconfig['listenporthttps'] : ($zoneid + 8001);
-	$href = "https://{$host}:{$port}";
+	$href = "https://{$host}:{$port}/?zone={$cpzone}";
 } else {
 	$port = $pconfig['listenporthttp'] ? $pconfig['listenporthttp'] : ($zoneid + 8000);
-	$href = "http://{$host}:{$port}";
+	$href = "http://{$host}:{$port}/?zone={$cpzone}";
 }
 
 if ($pconfig['page']['htmltext']) {
@@ -1122,7 +1122,7 @@ if ($pconfig['page']['errtext']) {
 	$section->addInput(new Form_Button(
 		'btnview',
 		'View current page',
-		'?zone=' . $cpzone . '&amp;act=viewerrhtml'
+		'?zone=' . $cpzone . '&act=viewerrhtml'
 	))->removeClass('btn-primary')->addClass('btn btn-default btn-xs');
 
 	$section->addInput(new Form_Button(
