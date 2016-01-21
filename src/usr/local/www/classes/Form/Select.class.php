@@ -67,7 +67,7 @@ class Form_Select extends Form_Input
 			}
 
 			if (!empty(trim($name)) || is_numeric($name)) {
-				$name_str = htmlspecialchars(gettext($name));
+				$name_str = htmlspecialchars(Form::translate($name));
 			} else {
 				// Fixes HTML5 validation: Element option without attribute label must not be empty
 				$name_str = "&nbsp;";

@@ -91,6 +91,36 @@ class Form extends Form_Element
 		throw new Exception('Form does not have a parent');
 	}
 
+	public static function translate($msgid)
+	{
+		$value = gettext($msgid);
+
+		if (!file_exists('/tmp/todo-translate.po') || $value != $msgid)
+			return $value;
+
+		// Not translated, store in todo translate file
+		$trace = array();
+		foreach (array_reverse(debug_backtrace()) as $point)
+		{
+			if (isset($point['class']))
+				$line = $point['class'] . $point['type'] . $point['function'];
+			else if (isset($point['file']))
+				$line = basename($point['file']) .':'. $point['function'];
+
+			array_push($trace, $line);
+		}
+		$trace = implode(' > ', $trace);
+
+		$msgid = addslashes($msgid);
+		file_put_contents('/tmp/todo-translate.po', <<<EOT
+
+#: $trace
+msgid "$msgid"
+msgstr ""
+EOT
+			,  FILE_APPEND);
+	}
+
 	public function __toString()
 	{
 		$element = parent::__toString();
